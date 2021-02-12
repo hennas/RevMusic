@@ -6,14 +6,20 @@
 
 ### Minutes
 *Summary of what was discussed during the meeting*
+
 -Going through the RESTful API introduction and the basic idea of our project; idea is good, but do not think about the final application, focus on the API itself
+
 -Do not worry much about authentication for registered users
+
 -Discussion about the next deadline, i.e., how to implement database, especially the role of tag; almost all information for database in section "main concepts"
 
 ### Action points
 *List here the actions points discussed with assistants*
+
 -Define 'tag' concept into the wiki text with more detail
+
 -Explain how the application would use the API in the use cases (one sentence)
+
 -Put snippet of code that shows the use of hypermedia in example APIs
 
 ### Comments from staff
