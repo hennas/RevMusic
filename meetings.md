@@ -2,7 +2,7 @@
 
 ## Meeting 1.
 * **DATE: 12.2.2020**
-* **ASSISTANTS:**
+* **ASSISTANTS: Iván Sánchez Milara**
 
 ### Minutes
 *Summary of what was discussed during the meeting*
@@ -21,6 +21,8 @@
 -Explain how the application would use the API in the use cases (one sentence)
 
 -Put snippet of code that shows the use of hypermedia in example APIs
+
+-Add example of actual clients using the Related Work APIs
 
 ### Comments from staff
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
