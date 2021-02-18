@@ -49,8 +49,8 @@ class Review(db.Model):
     __table_args__ = (db.UniqueConstraint("user_id", "album_id", name="_user_to_albumreview_uc"), )
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    album_id = db.Column(db.ForeignKey("album.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+    album_id = db.Column(db.ForeignKey("album.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.Text, nullable=False)
     star_rating = db.Column(db.Integer, nullable=False)
@@ -68,8 +68,8 @@ class Tag(db.Model):
     __table_args__ = (db.UniqueConstraint("user_id", "review_id", name="_usertag_to_review_uc"), )
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    review_id = db.Column(db.ForeignKey("review.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
+    review_id = db.Column(db.ForeignKey("review.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     meaning = db.Column(db.String(10), nullable=False, default="useful")
     
     user = db.relationship("User", back_populates="tags")
