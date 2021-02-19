@@ -21,17 +21,11 @@ def create_app(test_config=None):
     # Check what database to use
     if test_config is None:
         app.config.from_mapping(
-            SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(app.instance_path, "revmusic.db"),
+            SQLALCHEMY_DATABASE_URI = "sqlite:///../db/revmusic.db",
             SQLALCHEMY_TRACK_MODIFICATIONS=False
         )
     else:
         app.config.from_mapping(test_config)
-
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
 
     # Add database to the app
     db.init_app(app)
@@ -41,7 +35,7 @@ def create_app(test_config=None):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
-
+        
     from . import models
     # First run $ export FLASK_APP=revmusic/__init__.py
     # Make "$ flask init-db" callable. Must be called before running the app
