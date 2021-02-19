@@ -52,10 +52,15 @@ def _get_album(title, artist, publication_date=None, duration=None, genre=None):
     """
     Generate an album
     """
+    if publication_date == "test":
+        pass
+    elif publication_date is not None:
+        publication_date = to_date(publication_date)
+
     return Album(
         title=title,
         artist=artist,
-        publication_date=to_date(publication_date),
+        publication_date=publication_date,
         duration=duration,
         genre=genre
     )
@@ -64,11 +69,16 @@ def _get_review(title, content, star_rating, submission_date):
     """
     Generate a review
     """
+    if submission_date == "test":
+        pass
+    elif submission_date is not None:
+        submission_date = to_date(submission_date)
+
     return Review(
         title=title,
         content=content,
         star_rating=star_rating,
-        submission_date=to_date(submission_date)
+        submission_date=submission_date
     )
 
 def _get_tag(meaning="useful"):
@@ -133,4 +143,237 @@ def test_create_instances(app):
         assert db_tag.review == db_review
     
 
+def test_user_column(app):
+    """
+    Tests the constraints of the User column
+    """
+    with app.app_context():
+        # Check that username can't be null
+        user = _get_user(None, 'None', 'a'*64)
+        db.session.add(user)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Check that email can't be null
+        user = _get_user('None', None, 'a'*64)
+        db.session.add(user)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Check that password can't be null
+        user = _get_user('None', 'None', None)
+        db.session.add(user)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+def test_user_uniqueness(app):
+    """
+    Test that users are always unique, as they should be
+    """
+    with app.app_context():
+        # Test based on username
+        user1 = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('a', 'b', 'a'*64)
+        db.session.add(user1)
+        db.session.add(user2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test based on email
+        user1 = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('b', 'a', 'a'*64)
+        db.session.add(user1)
+        db.session.add(user2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test based on username&email
+        user1 = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('a', 'a', 'a'*64)
+        db.session.add(user1)
+        db.session.add(user2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test that two diffent ones can be added
+        user1 = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('b', 'b', 'a'*64)
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.commit()
+        assert User.query.count() == 2
+
+
+def test_album_column(app):
+    """
+    Tests the constraints of the Album column
+    """
+    with app.app_context():
+        # Check that publication_date, duration and genre can be Null
+        album1 = _get_album('a', 'a')
+        db.session.add(album1)
+        db.session.commit()
+        assert Album.query.count() == 1
+
+        # Check that title can't be null
+        album2 = _get_album(None, 'a')
+        db.session.add(album2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Check that artist can't be null
+        album2 = _get_album('a', None)
+        db.session.add(album2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Check that publication_date only accepts dates
+        album2 = _get_album('a', 'a', 'test')
+        db.session.add(album2)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Check that duration only accepts integers
+        album2 = _get_album('a', 'a', duration='a')
+        db.session.add(album2)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Checks that numbers can't be too big
+        album2 = _get_album('a', 'a', duration=9999*9999^123)
+        db.session.add(album2)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+def test_album_uniqueness(app):
+    """
+    Tests the uniquety constraint of the album model
+    """
+    with app.app_context():
+        album1 = _get_album('a', 'a')
+        album2 = _get_album('a', 'a')
+        album3 = _get_album('a', 'b')
+        album4 = _get_album('b', 'a')
+
+        # Same title and artist
+        db.session.add(album1)
+        db.session.add(album2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+        # Same title, different artist
+        db.session.add(album1)
+        db.session.add(album3)
+        db.session.commit()
+        assert Album.query.count() == 2
+        # Different title, same artist
+        db.session.add(album4)
+        db.session.commit()
+        assert Album.query.count() == 3
+
+def test_review_column(app):
+    """
+    Tests the review column's constraints
+    """
+    with app.app_context():
+        # Test that title can't be null
+        review = _get_review(None, 'a', 5, '01-01-2020')
+        db.session.add(review)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test that content can't be null
+        review = _get_review('a', None, 5, '01-01-2020')
+        db.session.add(review)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test that star_rating can't be null
+        review = _get_review('a', 'a', None, '01-01-2020')
+        db.session.add(review)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test that date can't be null
+        review = _get_review('a', 'a', 5, None)
+        db.session.add(review)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test that star_rating must be integer
+        review = _get_review('a', 'a', 'a', '01-01-2020')
+        db.session.add(review)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+        # Test that star_rating can't be too big number
+        review = _get_review('a', 'a', 9999*9999^123, '01-01-2020')
+        db.session.add(review)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
+def test_review_uniqueness(app):
+    """
+    Test the review model's uniqueness constraint
+    """
+    with app.app_context():
+        user1 = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('b', 'b', 'a'*64)
+        album1 = _get_album('a', 'a')
+        album2 = _get_album('b', 'b')
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.add(album1)
+        db.session.add(album2)
+        db.session.commit()
+
+        review1 = _get_review('a', 'a', 5, '01-01-2020')
+        review2 = _get_review('a', 'a', 5, '01-01-2020')
+        # Same user and album id
+        review1.user_id = 1
+        review1.album_id = 1
+        review2.user_id = 1
+        review2.album_id = 1
+        db.session.add(review1)
+        db.session.add(review2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
         
+        # Different ids
+        review2.user_id = 2
+        review2.album_id = 2
+        db.session.add(review1)
+        db.session.add(review2)
+        db.session.commit()
+        assert Review.query.count() == 2
+
+def test_tag_column(app):
+    """
+    Test the tag column's constraints
+    """
+    with app.app_context():
+        # Make sure the meaning can't be too long
+        tag = _get_tag('a'*100)
+        db.session.add(tag)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+
