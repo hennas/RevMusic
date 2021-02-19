@@ -156,9 +156,7 @@ class DBInterface:
         except IntegrityError:
             print("Failed to add tag!")
             return False
-        
         return True
-
 
     def commit_to_db(entity):
         """
