@@ -86,8 +86,6 @@ class DBInterface:
             return False
         # Create the review entity
         review = Review(
-            user_id=user_id,
-            album_id=album_id,
             title=title,
             content=content,
             star_rating=star_rating,
@@ -100,10 +98,11 @@ class DBInterface:
             print("Adding review failed. User and/or album doesn't exist")
             return False
     
-        user.reviews.append(review)
-        album.reviews.append(review)
         review.user = user
         review.album = album
+        user.reviews.append(review)
+        album.reviews.append(review)
+        
         # Stage changes
         db.session.add(user)
         db.session.add(album)
@@ -115,6 +114,7 @@ class DBInterface:
             print("Failed to add review!")
             return False
         return True
+        
 
     def db_add_tag(user_id, review_id, meaning="useful"):
         """
@@ -132,8 +132,6 @@ class DBInterface:
         print("Adding \"{}\" tag to review {}".format(meaning, review_id))
         # Create the new tag entity
         tag = Tag(
-            user_id=user_id,
-            review_id=review_id,
             meaning=meaning
         )
         # Connect tag to user and review

@@ -60,26 +60,22 @@ def _get_album(title, artist, publication_date=None, duration=None, genre=None):
         genre=genre
     )
 
-def _get_review(user_id, album_id, title, content, star_rating, submission_date):
+def _get_review(title, content, star_rating, submission_date):
     """
     Generate a review
     """
     return Review(
-        user_id=user_id,
-        album_id=album_id,
         title=title,
         content=content,
         star_rating=star_rating,
         submission_date=to_date(submission_date)
     )
 
-def _get_tag(user_id, review_id, meaning="useful"):
+def _get_tag(meaning="useful"):
     """
     Generate a tag
     """
     return Tag(
-        user_id=user_id,
-        review_id=review_id,
         meaning=meaning
     )
 
@@ -96,8 +92,8 @@ def test_create_instances(app):
         # Create the instances
         user = _get_user('test_user', 'test@gmail.com', 'a'*64)
         album = _get_album('test album', 'test artist', '10-10-2020', 120, 'test metal')
-        review = _get_review(1, 1, 'test review', 'test review text', 5, '10-10-2020')
-        tag = _get_tag(1, 1, 'useful')
+        review = _get_review('test review', 'test review text', 5, '10-10-2020')
+        tag = _get_tag('useful')
         # Connect review to user & album
         user.reviews.append(review)
         album.reviews.append(review)
@@ -136,3 +132,11 @@ def test_create_instances(app):
         assert db_tag.user == db_user
         assert db_tag.review == db_review
     
+def test_tag_one_to_one(app):
+    """
+    Test that a tag can't be assigned to multiple reviews/users
+    """
+    with app.app_context:
+        user1 = _get_user('test_user', 'test@gmail.com', 'a'*64)
+        user2 = _get_user('test_user2', 'test2@gmail.com', 'a'*64)
+        
