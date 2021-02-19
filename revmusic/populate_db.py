@@ -10,15 +10,8 @@ from .db_interface import DBInterface
 from .models import User, Album, Review, Tag
 from .utils import to_date
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    # Force foreing key
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
 
 # Useful link for viewing .db file contents: https://inloop.github.io/sqlite-viewer/
-
 @click.command(name="populate-db", help="Populates the database with hardcoded data")
 @with_appcontext
 def populate_db_cmd():

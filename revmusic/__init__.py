@@ -7,15 +7,11 @@ from sqlalchemy import event
 # Initialize the database object
 db = SQLAlchemy()
 
-def print_lol():
-    print("lol")
 
 def create_app(test_config=None):
     """
     - This function is called when "$ flask" is entered into the command line.
-    - The name "create_app" is defined in Flask's documentation, so don't change it.
-    - An argument can be passed to test_config with $ export FLASK_APP="revmusic:create_app('test')"  
-        - If something is passed, test.db is used instead of revmusic.db
+    - The name "create_app" is defined in Flask's documentation, so don't change it. 
     - Links:
         - (https://flask.palletsprojects.com/en/1.1.x/tutorial/factory/)
         - (https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/flask-api-project-layout/)
@@ -24,15 +20,24 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True, static_folder="static")
     # Check what database to use
     if test_config is None:
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///../db/revmusicdb.db"
+        app.config.from_mapping(
+            SQLALCHEMY_DATABASE_URI = "sqlite:///../db/revmusic.db",
+            SQLALCHEMY_TRACK_MODIFICATIONS=False
+        )
     else:
-        print("Using database test.db")
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///../db/test.db"
+        app.config.from_mapping(test_config)
+
     # Don't track modifications
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Add database to the app
     db.init_app(app)
+    # Force foreing key usage
+    @event.listens_for(Engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
     from . import models
     # First run $ export FLASK_APP=revmusic/__init__.py
     # Make "$ flask init-db" callable. Must be called before running the app

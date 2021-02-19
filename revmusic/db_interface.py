@@ -69,7 +69,7 @@ class DBInterface:
 
     def db_add_review(user_id, album_id, title, content, star_rating, submission_date):
         """
-        Used to add a new review for an album in the database
+        Used to add a new review for an album in the database. Additionally, connects review to user and album
         Params:
         - user_id: ID of user who added the review
         - album_id: ID of the target album
@@ -93,14 +93,32 @@ class DBInterface:
             star_rating=star_rating,
             submission_date=submission_date
         )
-        # Attempt to add
-        if not DBInterface.commit_to_db(review):
+        # Connect review to user and album
+        user = User.query.filter_by(id=user_id).first()
+        album = Album.query.filter_by(id=album_id).first()
+        if user is None or album is None:
+            print("Adding review failed. User and/or album doesn't exist")
+            return False
+    
+        user.reviews.append(review)
+        album.reviews.append(review)
+        review.user = user
+        review.album = album
+        # Stage changes
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
+        # Commit changes
+        try:
+            db.session.commit()
+        except IntegrityError:
+            print("Failed to add review!")
             return False
         return True
 
     def db_add_tag(user_id, review_id, meaning="useful"):
         """
-        Used to tag a review useful/not useful in the database
+        Used to tag a review useful/not useful in the database. Additionally, connects tag to user and review
         Params:
         - user_id: ID of the user tagging a review
         - review_id: ID of target review
@@ -118,10 +136,29 @@ class DBInterface:
             review_id=review_id,
             meaning=meaning
         )
-        # Attempt to add
-        if not DBInterface.commit_to_db(tag):
+        # Connect tag to user and review
+        user = User.query.filter_by(id=user_id).first()
+        review = Review.query.filter_by(id=review_id).first()
+        if user is None or review is None:
+            print("Adding tag failed. User and/or review doesn't exist")
             return False
+        tag.user = user
+        tag.review = review
+        user.tags.append(tag)
+        review.tags.append(tag)
+        # Stage changes
+        db.session.add(tag)
+        db.session.add(user)
+        db.session.add(review)
+        # Commit changes
+        try:
+            db.session.commit()
+        except IntegrityError:
+            print("Failed to add tag!")
+            return False
+        
         return True
+
 
     def commit_to_db(entity):
         """
