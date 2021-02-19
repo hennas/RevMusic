@@ -2,5 +2,7 @@
 bin
 lib
 lib64
+include
 pyvenv.cfg
 share
+__pycache__
