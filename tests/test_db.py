@@ -132,11 +132,5 @@ def test_create_instances(app):
         assert db_tag.user == db_user
         assert db_tag.review == db_review
     
-def test_tag_one_to_one(app):
-    """
-    Test that a tag can't be assigned to multiple reviews/users
-    """
-    with app.app_context:
-        user1 = _get_user('test_user', 'test@gmail.com', 'a'*64)
-        user2 = _get_user('test_user2', 'test2@gmail.com', 'a'*64)
+
         
