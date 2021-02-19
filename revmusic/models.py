@@ -1,20 +1,14 @@
+import click
 from flask import Flask
+from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.engine import Engine
 from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-app = Flask(__name__, static_folder="static")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///revmusicdb.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
+# The database is required here. Defined in __init__.py
+from . import db
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
-    
 class User(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
@@ -74,3 +68,14 @@ class Tag(db.Model):
     
     user = db.relationship("User", back_populates="tags")
     review = db.relationship("Review", back_populates="tags")
+
+
+@click.command(name="init-db", help="Calls create_all() on the database")
+@with_appcontext
+def init_db_cmd():
+    """
+    Creates the actual database with the above models.
+    This function is called from the command line with "$ flask init-db"
+    """
+    db.create_all()
+    print("Database created")
