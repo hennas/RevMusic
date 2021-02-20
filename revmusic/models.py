@@ -1,3 +1,4 @@
+import os
 import click
 from flask import Flask
 from flask.cli import with_appcontext
@@ -75,7 +76,9 @@ class Tag(db.Model):
 def init_db_cmd():
     """
     Creates the actual database with the above models.
-    This function is called from the command line with "$ flask init-db"
+    This function is called from the command line with "$ flask init-db"
     """
+    if os.path.exists("db/revmusic.db"):
+        os.remove("db/revmusic.db")
     db.create_all()
     print("Database created")
