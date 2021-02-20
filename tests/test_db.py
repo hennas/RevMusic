@@ -11,6 +11,11 @@ from revmusic.models import User, Album, Review, Tag
 
 # RUN WITH: $ python3 -m pytest tests
 
+# TODO:
+# - Retrieve instances with different filters
+# - Test onDelete and onUpdate
+# - Test foreign key violations
+
 @pytest.fixture
 def app():
     """
@@ -208,6 +213,28 @@ def test_user_uniqueness(app):
         db.session.commit()
         assert User.query.count() == 2
 
+def test_user_retrieve(app):
+    """
+    Test retrieving existing users with different filters
+    """
+    with app.app_context():
+        user1 = _get_user('test user', 'tester@gmail.com', 'a'*64)
+        user2 = _get_user('tester', 'test_user@gmail.com', 'b'*64)
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.commit()
+        # Based on username
+        assert User.query.filter_by(username='test user').count() == 1
+        assert User.query.filter_by(username='tester').count() == 1
+        assert User.query.filter_by(username='test').count() == 0
+        assert User.query.filter_by(username='testerr').count() == 0
+        # Based on email
+        assert User.query.filter_by(email='tester@gmail.com').count() == 1
+        assert User.query.filter_by(email='test_user@gmail.com').count() == 1
+        assert User.query.filter_by(email='gmail.com').count() == 0
+        assert User.query.filter_by(email='test user@gmail.com').count() == 0
+
+
 def test_user_info_update(app):
     """
     Tests that user model's values can be updated
@@ -315,6 +342,38 @@ def test_album_uniqueness(app):
         db.session.add(album4)
         db.session.commit()
         assert Album.query.count() == 3
+
+def test_album_retrieve(app):
+    """
+    Test retrieving existing albums with different filters
+    """
+    with app.app_context():
+        album1 = _get_album('Victory or Valhalla', 'Vuohikuu', '10-10-2020', 100, 'black metal')
+        album2 = _get_album('Polla Stelaris', 'Vuohikuu', '10-10-2001', 100, 'black metal')
+        album3 = _get_album('Serious Business', 'YTC', '10-10-2010', 60, 'rap')
+        album4 = _get_album('You Suffer', 'Napalm Death', '10-10-2020', 1, 'trash')
+        db.session.add(album1)
+        db.session.add(album2)
+        db.session.add(album3)
+        db.session.add(album4)
+        # Based on title
+        assert Album.query.filter_by(title='Serious Business').count() == 1
+        assert Album.query.filter_by(title='YouSuffer').count() == 0
+        # Based on artist
+        assert Album.query.filter_by(artist='Vuohikuu').count() == 2
+        assert Album.query.filter_by(artist='YTc').count() == 0
+        # Based on publication_date
+        assert Album.query.filter_by(publication_date=to_date('10-10-2020')).count() == 2
+        assert Album.query.filter_by(publication_date=to_date('10-10-2001')).count() == 1
+        assert Album.query.filter_by(publication_date=to_date('10-10-2021')).count() == 0
+        # Based on duration
+        assert Album.query.filter_by(duration=100).count() == 2
+        assert Album.query.filter_by(duration=1).count() == 1
+        assert Album.query.filter_by(duration=61).count() == 0
+        # Based on genre
+        assert Album.query.filter_by(genre='black metal').count() == 2
+        assert Album.query.filter_by(genre='trash').count() == 1
+        assert Album.query.filter_by(genre='thrash').count() == 0
 
 def test_album_info_update(app):
     """
@@ -438,6 +497,49 @@ def test_review_uniqueness(app):
         db.session.commit()
         assert Review.query.count() == 2
 
+def test_review_retrieve(app):
+    """
+    Test retrieving existing reviews with different filters
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('b', 'b', 'b'*64)
+        album = _get_album('a', 'a')
+        album2 = _get_album('b', 'b')
+        album3 = _get_album('c', 'c')
+
+        review1 = _get_review('a', 'a is a good album', 5, '10-10-2020')
+        review1.user = user
+        review1.album = album
+
+        review2 = _get_review('b', 'b is a bad album', 1, '10-10-2020')
+        review2.user = user
+        review2.album = album2
+
+        db.session.add(review1)
+        db.session.add(review2)
+        db.session.add(user2)
+        db.session.add(album3)
+        db.session.commit()
+
+        # By user
+        assert Review.query.filter_by(user=user).count() == 2
+        assert Review.query.filter_by(user=user2).count() == 0
+        # By album
+        assert Review.query.filter_by(album=album).count() == 1
+        assert Review.query.filter_by(album=album2).count() == 1
+        assert Review.query.filter_by(album=album3).count() == 0
+        # By title
+        assert Review.query.filter_by(title='a').count() == 1
+        assert Review.query.filter_by(title='c').count() == 0
+        # By content
+        assert Review.query.filter_by(content='a is a good album').count() == 1
+        assert Review.query.filter_by(content='a is agood album').count() == 0
+        # By star_rating
+        assert Review.query.filter_by(star_rating=5).count() == 1
+        assert Review.query.filter_by(star_rating=1).count() == 1
+        assert Review.query.filter_by(star_rating=4).count() == 0
+
 def test_review_info_update(app):
     """
     Tests that album model's values can be updated
@@ -494,6 +596,42 @@ def test_tag_column(app):
         with pytest.raises(IntegrityError):
             db.session.commit()
         db.session.rollback()
+
+def test_tag_retrieve(app):
+    """
+    Test retrieving existing tags with different filters
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        user2 = _get_user('b', 'b', 'b'*64)
+        album = _get_album('a', 'a')
+        album2 = _get_album('b', 'b')
+        review = _get_review('a', 'a', 1, '10-10-2020')
+        review2 = _get_review('b', 'b', 1, '10-10-2020')
+        review.user = user
+        review.album = album
+        review2.user = user2
+        review2.album = album2
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        tag2 = _get_tag('not useful')
+        tag2.user = user
+        tag2.review = review2
+        db.session.add(tag)
+        db.session.add(tag2)
+        db.session.commit()
+
+        # By user
+        assert Tag.query.filter_by(user=user).count() == 2
+        assert Tag.query.filter_by(user=user2).count() == 0
+        # By review
+        assert Tag.query.filter_by(review=review).count() == 1
+        assert Tag.query.filter_by(review=review2).count() == 1
+        # By meaning
+        assert Tag.query.filter_by(meaning="useful").count() == 1
+        assert Tag.query.filter_by(meaning="not useful").count() == 1
+        assert Tag.query.filter_by(meaning="usefull").count() == 0
 
 def test_tag_info_update(app):
     """
