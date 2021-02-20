@@ -484,6 +484,15 @@ def test_review_column(app):
             db.session.commit()
         db.session.rollback()
 
+        # ID pointing to non-existent entity
+        review = _get_review('a', 'a', 5, '01-01-2020')
+        review.user_id = 100
+        review.album_id = 200
+        db.session.add(review)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+
 def test_review_uniqueness(app):
     """
     Test the review model's uniqueness constraint
@@ -624,6 +633,14 @@ def test_tag_column(app):
         with pytest.raises(ValueError):
             tag.review = violation1
         # Check Null foreign keys
+        db.session.add(tag)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
+        # ID pointing to non-existent entity
+        tag = _get_tag()
+        tag.user_id = 100
+        tag.review_id = 200
         db.session.add(tag)
         with pytest.raises(StatementError):
             db.session.commit()
