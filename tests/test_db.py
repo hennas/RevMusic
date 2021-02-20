@@ -209,6 +209,28 @@ def test_user_uniqueness(app):
         db.session.commit()
         assert User.query.count() == 2
 
+def test_user_info_update(app):
+    """
+    Tests that user model's values can be updated
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        db.session.add(user)
+        db.session.commit()
+        
+        # Update All values
+        user = User.query.first()
+        user.username = 'b'
+        user.email = 'c'
+        user.password = 'd'*64
+        db.session.add(user)
+        db.session.commit()
+        
+        user = User.query.first()
+        assert user.username == 'b'
+        assert user.email == 'c'
+        assert user.password == 'd'*64
+
 
 def test_album_column(app):
     """
@@ -281,6 +303,33 @@ def test_album_uniqueness(app):
         db.session.add(album4)
         db.session.commit()
         assert Album.query.count() == 3
+
+def test_album_info_update(app):
+    """
+    Tests that album model's values can be updated
+    """
+    with app.app_context():
+        album = _get_album('a', 'a', '10-10-2020', 100, 'a')
+        db.session.add(album)
+        db.session.commit()
+        
+        # Update All values
+        album = Album.query.first()
+        album.title = 'b'
+        album.artist = 'c'
+        album.publication_date = to_date('20-10-2021')
+        album.duration = 10
+        album.genre = 'd'
+        db.session.add(album)
+        db.session.commit()
+        
+        album = Album.query.first()
+        assert album.title == 'b'
+        assert album.artist == 'c'
+        assert album.publication_date == to_date('20-10-2021')
+        assert album.duration == 10
+        assert album.genre == 'd'
+
 
 def test_review_column(app):
     """
@@ -365,6 +414,34 @@ def test_review_uniqueness(app):
         db.session.commit()
         assert Review.query.count() == 2
 
+def test_review_info_update(app):
+    """
+    Tests that album model's values can be updated
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 1, '10-10-2020')
+        review.user = user
+        review.album = album
+        db.session.add(review)
+        db.session.commit()
+        
+        # Update All values
+        review = Review.query.first()
+        review.title = 'b'
+        review.content = 'c'
+        review.star_rating = 5
+        review.submission_date = to_date('20-10-2021')
+        db.session.add(review)
+        db.session.commit()
+        
+        review = Review.query.first()
+        assert review.title == 'b'
+        assert review.content == 'c'
+        assert review.star_rating == 5
+        assert review.submission_date == to_date('20-10-2021')
+
 def test_tag_column(app):
     """
     Test the tag column's constraints
@@ -377,3 +454,27 @@ def test_tag_column(app):
             db.session.commit()
         db.session.rollback()
 
+def test_tag_info_update(app):
+    """
+    Tests that album model's values can be updated
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 1, '10-10-2020')
+        review.user = user
+        review.album = album
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        db.session.add(tag)
+        db.session.commit()
+        
+        # Update All values
+        tag = Tag.query.first()
+        tag.meaning = 'not useful'
+        db.session.add(tag)
+        db.session.commit()
+        
+        tag = Tag.query.first()
+        assert tag.meaning == 'not useful'
