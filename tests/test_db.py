@@ -141,7 +141,6 @@ def test_create_instances(app):
         assert db_tag in db_review.tags
         assert db_tag.user == db_user
         assert db_tag.review == db_review
-    
 
 def test_user_column(app):
     """
@@ -230,6 +229,19 @@ def test_user_info_update(app):
         assert user.username == 'b'
         assert user.email == 'c'
         assert user.password == 'd'*64
+
+def test_user_delete(app):
+    """
+    Test that a user can be deleted
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'b'*64)
+        db.session.add(user)
+        db.session.commit()
+        user = User.query.first()
+        db.session.delete(user)
+        db.session.commit()
+        assert User.query.count() == 0
 
 
 def test_album_column(app):
@@ -330,6 +342,18 @@ def test_album_info_update(app):
         assert album.duration == 10
         assert album.genre == 'd'
 
+def test_album_delete(app):
+    """
+    Test that a album can be deleted
+    """
+    with app.app_context():
+        album = _get_album('a', 'a')
+        db.session.add(album)
+        db.session.commit()
+        album = Album.query.first()
+        db.session.delete(album)
+        db.session.commit()
+        assert Album.query.count() == 0
 
 def test_review_column(app):
     """
@@ -442,6 +466,23 @@ def test_review_info_update(app):
         assert review.star_rating == 5
         assert review.submission_date == to_date('20-10-2021')
 
+def test_review_delete(app):
+    """
+    Tests that a review can be deleted
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 1, '10-10-2020')
+        review.user = user
+        review.album = album
+        db.session.add(review)
+        db.session.commit()
+        review = Review.query.first()
+        db.session.delete(review)
+        db.session.commit()
+        assert Review.query.count() == 0
+
 def test_tag_column(app):
     """
     Test the tag column's constraints
@@ -478,3 +519,23 @@ def test_tag_info_update(app):
         
         tag = Tag.query.first()
         assert tag.meaning == 'not useful'
+
+def test_tag_delete(app):
+    """
+    Tests that a tag can be deleted
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 1, '10-10-2020')
+        tag = _get_tag()
+        review.user = user
+        review.album = album
+        tag.user = user
+        tag.review = review
+        db.session.add(tag)
+        db.session.commit()
+        tag = Tag.query.first()
+        db.session.delete(tag)
+        db.session.commit()
+        assert Tag.query.count() == 0
