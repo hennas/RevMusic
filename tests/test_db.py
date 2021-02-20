@@ -788,3 +788,48 @@ def test_ondelete(app):
         db.session.commit()
         assert Review.query.count() == 0
         assert Tag.query.count() == 0
+
+def test_onupdate(app):
+    """
+    Tests the models' onupdate
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 5, '10-10-2020')
+        review.user = user
+        review.album = album
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
+        db.session.add(tag)
+        db.session.commit()
+
+        # Test that updating user and album id updates user and album in review and tag
+        user = User.query.first()
+        album = Album.query.first()
+        user.id = 10
+        album.id = 16
+        db.session.add(user)
+        db.session.add(album)
+        db.session.commit()
+        assert Review.query.first().user.id == 10
+        assert Review.query.first().album.id == 16
+        assert Tag.query.first().user.id == 10
+
+        # Test that updating review and tag id updates user, album, review and tag
+        review = Review.query.first()
+        tag = Tag.query.first()
+        review.id = 13
+        tag.id = 36
+        db.session.add(review)
+        db.session.add(tag)
+        db.session.commit()
+        assert User.query.first().reviews[0].id == 13
+        assert User.query.first().tags[0].id == 36
+        assert Album.query.first().reviews[0].id == 13
+        assert Review.query.first().tags[0].id == 36
+        assert Tag.query.first().review.id == 13
