@@ -12,9 +12,7 @@ from revmusic.models import User, Album, Review, Tag
 # RUN WITH: $ python3 -m pytest tests
 
 # TODO:
-# - Retrieve instances with different filters
 # - Test onDelete and onUpdate
-# - Test foreign key violations
 
 @pytest.fixture
 def app():
@@ -173,6 +171,16 @@ def test_user_column(app):
             db.session.commit()
         db.session.rollback()
 
+        # Check foreign key violations
+        user = _get_user('a', 'a', 'a')
+        violation = _get_album('a', 'a')
+        # Reviews
+        with pytest.raises(KeyError):
+            user.reviews.append(violation)
+        # Tags
+        with pytest.raises(KeyError):
+            user.tags.append(violation)
+
 def test_user_uniqueness(app):
     """
     Test that users are always unique, as they should be
@@ -316,6 +324,13 @@ def test_album_column(app):
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
+
+        # Check foreign key violations
+        album = _get_album('a', 'a')
+        violation = _get_user('a', 'a', 'a'*64)
+        # Reviews
+        with pytest.raises(KeyError):
+            album.reviews.append(violation)
 
 def test_album_uniqueness(app):
     """
@@ -461,6 +476,17 @@ def test_review_column(app):
             db.session.commit()
         db.session.rollback()
 
+        # Check foreign key violations
+        review = _get_review('a', 'a', 5, '01-01-2020')
+        violation1 = _get_user('a', 'a', 'a'*64)
+        violation2 = _get_album('a', 'a')
+        # User
+        with pytest.raises(ValueError):
+            review.user = violation2
+        # Album
+        with pytest.raises(ValueError):
+            review.album = violation1
+
 def test_review_uniqueness(app):
     """
     Test the review model's uniqueness constraint
@@ -590,12 +616,16 @@ def test_tag_column(app):
     Test the tag column's constraints
     """
     with app.app_context():
-        # Make sure the meaning can't be too long
-        tag = _get_tag('a'*100)
-        db.session.add(tag)
-        with pytest.raises(IntegrityError):
-            db.session.commit()
-        db.session.rollback()
+        # Check foreign key violations
+        tag = _get_tag()
+        violation1 = _get_user('a', 'a', 'a'*64)
+        violation2 = _get_review('a', 'a', 5, '10-10-2020')
+        # User
+        with pytest.raises(ValueError):
+            tag.user = violation2
+        # Album
+        with pytest.raises(ValueError):
+            tag.review = violation1
 
 def test_tag_retrieve(app):
     """
