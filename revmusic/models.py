@@ -70,6 +70,8 @@ class Tag(db.Model):
     user = db.relationship("User", back_populates="tags")
     review = db.relationship("Review", back_populates="tags")
 
+    def __repr__(self):
+        return "{} tag <{}> by {}".format(self.meaning, self.id, self.user.username)
 
 @click.command(name="init-db", help="Calls create_all() on the database")
 @with_appcontext
