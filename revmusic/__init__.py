@@ -7,7 +7,7 @@ from sqlalchemy import event
 # Initialize the database object
 db = SQLAlchemy()
 
-
+# The example project provided by the course assistants was a basis for this
 def create_app(test_config=None):
     """
     - This function is called when "$ flask" is entered into the command line.
