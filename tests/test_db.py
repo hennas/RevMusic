@@ -18,7 +18,7 @@ from revmusic.models import User, Album, Review, Tag
 def app():
     """
     Setup the revmusic database for testing
-    @pytest.fixture decoration ensures that all functions starting with test_ are ran
+    @pytest.fixture decoration ensures that all functions starting with test_ are run
     """
     # Configure the app
     db_fd, db_fname = tempfile.mkstemp()
@@ -325,7 +325,7 @@ def test_album_column(app):
 
 def test_album_uniqueness(app):
     """
-    Tests the uniquety constraint of the album model
+    Tests the uniqueness constraint of the album model
     """
     with app.app_context():
         album1 = _get_album('a', 'a')
@@ -477,6 +477,12 @@ def test_review_column(app):
         # Album
         with pytest.raises(ValueError):
             review.album = violation1
+        # Check Null foreign keys
+        review = _get_review('a', "I don't like foreign keys", 5, '10-10-2015')
+        db.session.add(review)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
 
 def test_review_uniqueness(app):
     """
@@ -617,6 +623,11 @@ def test_tag_column(app):
         # Album
         with pytest.raises(ValueError):
             tag.review = violation1
+        # Check Null foreign keys
+        db.session.add(tag)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
 
 def test_tag_retrieve(app):
     """
@@ -697,4 +708,83 @@ def test_tag_delete(app):
         tag = Tag.query.first()
         db.session.delete(tag)
         db.session.commit()
+        assert Tag.query.count() == 0
+
+def test_ondelete(app):
+    """
+    Tests the models' ondeletes
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 5, '10-10-2020')
+        review.user = user
+        review.album = album
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
+        db.session.add(tag)
+        db.session.commit()
+
+        # Test that tag is removed from user and review once its deleted
+        tag = Tag.query.first()
+        db.session.delete(tag)
+        db.session.commit()
+        review = Review.query.first()
+        user = User.query.first()
+        assert len(user.tags) == 0
+        assert (len(review.tags)) == 0
+
+        # Test that tag and review is removed from user and album once review is removed
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        db.session.add(tag)
+        db.session.commit()
+        review = Review.query.first()
+        db.session.delete(review)
+        db.session.commit()
+        user = User.query.first()
+        album = Album.query.first()
+        assert len(user.reviews) == 0
+        assert len(album.reviews) == 0
+        assert Tag.query.count() == 0
+
+        # Test that review and tag are deleted when album is deleted
+        review = _get_review('a', 'a', 5, '10-10-2020')
+        review.user = user
+        review.album = album
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        db.session.add(review)
+        db.session.add(tag)
+        db.session.commit()
+        album = Album.query.first()
+        db.session.delete(album)
+        db.session.commit()
+        assert Review.query.count() == 0
+        assert Tag.query.count() == 0
+
+        # Test that review and tag are deleted when user is deleted
+        user = User.query.first()
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 5, '10-10-2020')
+        review.user = user
+        review.album = album
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
+        db.session.add(tag)
+        db.session.commit()
+        user = User.query.first()
+        db.session.delete(user)
+        db.session.commit()
+        assert Review.query.count() == 0
         assert Tag.query.count() == 0
