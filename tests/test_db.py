@@ -55,15 +55,10 @@ def _get_album(title, artist, publication_date=None, duration=None, genre=None):
     """
     Generate an album
     """
-    if publication_date == "test":
-        pass
-    elif publication_date is not None:
-        publication_date = to_date(publication_date)
-
     return Album(
         title=title,
         artist=artist,
-        publication_date=publication_date,
+        publication_date=to_date(publication_date),
         duration=duration,
         genre=genre
     )
@@ -72,16 +67,11 @@ def _get_review(title, content, star_rating, submission_date):
     """
     Generate a review
     """
-    if submission_date == "test":
-        pass
-    elif submission_date is not None:
-        submission_date = to_date(submission_date)
-
     return Review(
         title=title,
         content=content,
         star_rating=star_rating,
-        submission_date=submission_date
+        submission_date=to_date(submission_date)
     )
 
 def _get_tag(meaning="useful"):
@@ -305,7 +295,8 @@ def test_album_column(app):
         db.session.rollback()
 
         # Check that publication_date only accepts dates
-        album2 = _get_album('a', 'a', 'test')
+        album2 = _get_album('a', 'a', '10-10-2020')
+        album2.publication_date = '10-10-2020'
         db.session.add(album2)
         with pytest.raises(StatementError):
             db.session.commit()
