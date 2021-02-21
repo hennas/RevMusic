@@ -11,9 +11,6 @@ from revmusic.models import User, Album, Review, Tag
 
 # RUN WITH: $ python3 -m pytest tests
 
-# TODO:
-# - Test onDelete and onUpdate
-
 @pytest.fixture
 def app():
     """
@@ -88,7 +85,7 @@ def _get_tag(meaning="useful"):
 
 def test_create_instances(app):
     """
-    Tests that we can create one of each model and add them to the DB
+    Tests that we can create an instance of each model and add them to the DB
     using valid values. Also checks that relationships are saved correctly
     """
     with app.app_context():
@@ -137,7 +134,7 @@ def test_create_instances(app):
 
 def test_user_column(app):
     """
-    Tests the constraints of the User column
+    Tests the attribute constraints of the User model
     """
     with app.app_context():
         # Check that username can't be null
@@ -203,7 +200,7 @@ def test_user_uniqueness(app):
             db.session.commit()
         db.session.rollback()
 
-        # Test that two diffent ones can be added
+        # Test that two different ones can be added
         user1 = _get_user('a', 'a', 'a'*64)
         user2 = _get_user('b', 'b', 'a'*64)
         db.session.add(user1)
@@ -221,12 +218,12 @@ def test_user_retrieve(app):
         db.session.add(user1)
         db.session.add(user2)
         db.session.commit()
-        # Based on username
+        # Filter based on username
         assert User.query.filter_by(username='test user').count() == 1
         assert User.query.filter_by(username='tester').count() == 1
         assert User.query.filter_by(username='test').count() == 0
         assert User.query.filter_by(username='testerr').count() == 0
-        # Based on email
+        # Filter based on email
         assert User.query.filter_by(email='tester@gmail.com').count() == 1
         assert User.query.filter_by(email='test_user@gmail.com').count() == 1
         assert User.query.filter_by(email='gmail.com').count() == 0
@@ -235,14 +232,14 @@ def test_user_retrieve(app):
 
 def test_user_info_update(app):
     """
-    Tests that user model's values can be updated
+    Tests that User model's values can be updated
     """
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         db.session.add(user)
         db.session.commit()
         
-        # Update All values
+        # Update all values
         user = User.query.first()
         user.username = 'b'
         user.email = 'c'
@@ -271,7 +268,7 @@ def test_user_delete(app):
 
 def test_album_column(app):
     """
-    Tests the constraints of the Album column
+    Tests the attribute constraints of the Album model
     """
     with app.app_context():
         # Check that publication_date, duration and genre can be Null
@@ -325,7 +322,7 @@ def test_album_column(app):
 
 def test_album_uniqueness(app):
     """
-    Tests the uniqueness constraint of the album model
+    Tests the uniqueness constraint of the Album model
     """
     with app.app_context():
         album1 = _get_album('a', 'a')
@@ -333,18 +330,18 @@ def test_album_uniqueness(app):
         album3 = _get_album('a', 'b')
         album4 = _get_album('b', 'a')
 
-        # Same title and artist
+        # Same title and artist; uniqueness constraint requires that there cannot be two rows with the same album title and artist
         db.session.add(album1)
         db.session.add(album2)
         with pytest.raises(IntegrityError):
             db.session.commit()
         db.session.rollback()
-        # Same title, different artist
+        # Same title, different artist can be added
         db.session.add(album1)
         db.session.add(album3)
         db.session.commit()
         assert Album.query.count() == 2
-        # Different title, same artist
+        # Different title, same artist can be added
         db.session.add(album4)
         db.session.commit()
         assert Album.query.count() == 3
@@ -362,35 +359,35 @@ def test_album_retrieve(app):
         db.session.add(album2)
         db.session.add(album3)
         db.session.add(album4)
-        # Based on title
+        # Filter based on title
         assert Album.query.filter_by(title='Serious Business').count() == 1
         assert Album.query.filter_by(title='YouSuffer').count() == 0
-        # Based on artist
+        # Filter based on artist
         assert Album.query.filter_by(artist='Vuohikuu').count() == 2
         assert Album.query.filter_by(artist='YTc').count() == 0
-        # Based on publication_date
+        # Filter based on publication_date
         assert Album.query.filter_by(publication_date=to_date('10-10-2020')).count() == 2
         assert Album.query.filter_by(publication_date=to_date('10-10-2001')).count() == 1
         assert Album.query.filter_by(publication_date=to_date('10-10-2021')).count() == 0
-        # Based on duration
+        # Filter based on duration
         assert Album.query.filter_by(duration=100).count() == 2
         assert Album.query.filter_by(duration=1).count() == 1
         assert Album.query.filter_by(duration=61).count() == 0
-        # Based on genre
+        # Filter based on genre
         assert Album.query.filter_by(genre='black metal').count() == 2
         assert Album.query.filter_by(genre='trash').count() == 1
         assert Album.query.filter_by(genre='thrash').count() == 0
 
 def test_album_info_update(app):
     """
-    Tests that album model's values can be updated
+    Tests that Album model's values can be updated
     """
     with app.app_context():
         album = _get_album('a', 'a', '10-10-2020', 100, 'a')
         db.session.add(album)
         db.session.commit()
         
-        # Update All values
+        # Update all values
         album = Album.query.first()
         album.title = 'b'
         album.artist = 'c'
@@ -422,7 +419,7 @@ def test_album_delete(app):
 
 def test_review_column(app):
     """
-    Tests the review column's constraints
+    Tests the attribute constraints for Review model
     """
     with app.app_context():
         # Test that title can't be null
@@ -471,20 +468,20 @@ def test_review_column(app):
         review = _get_review('a', 'a', 5, '01-01-2020')
         violation1 = _get_user('a', 'a', 'a'*64)
         violation2 = _get_album('a', 'a')
-        # User
+        # FK to user cannot reference anything else but an instance of User model
         with pytest.raises(ValueError):
             review.user = violation2
-        # Album
+        # FK to album cannot reference anything else but an instance of Album model
         with pytest.raises(ValueError):
             review.album = violation1
-        # Check Null foreign keys
+        # Check that Null foreign keys not allowed
         review = _get_review('a', "I don't like foreign keys", 5, '10-10-2015')
         db.session.add(review)
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
 
-        # ID pointing to non-existent entity
+        # FK pointing to non-existent entity (not allowed)
         review = _get_review('a', 'a', 5, '01-01-2020')
         review.user_id = 100
         review.album_id = 200
@@ -495,7 +492,7 @@ def test_review_column(app):
 
 def test_review_uniqueness(app):
     """
-    Test the review model's uniqueness constraint
+    Test the Review model's uniqueness constraint
     """
     with app.app_context():
         user1 = _get_user('a', 'a', 'a'*64)
@@ -510,7 +507,7 @@ def test_review_uniqueness(app):
 
         review1 = _get_review('a', 'a', 5, '01-01-2020')
         review2 = _get_review('a', 'a', 5, '01-01-2020')
-        # Same user and album id
+        # Same user and album id; there cannot be two reviews made by the same user to the same album
         review1.user_id = 1
         review1.album_id = 1
         review2.user_id = 1
@@ -521,7 +518,7 @@ def test_review_uniqueness(app):
             db.session.commit()
         db.session.rollback()
         
-        # Different ids
+        # Different ids allowed
         review2.user_id = 2
         review2.album_id = 2
         db.session.add(review1)
@@ -554,27 +551,27 @@ def test_review_retrieve(app):
         db.session.add(album3)
         db.session.commit()
 
-        # By user
+        # Filter by user
         assert Review.query.filter_by(user=user).count() == 2
         assert Review.query.filter_by(user=user2).count() == 0
-        # By album
+        # Filter by album
         assert Review.query.filter_by(album=album).count() == 1
         assert Review.query.filter_by(album=album2).count() == 1
         assert Review.query.filter_by(album=album3).count() == 0
-        # By title
+        # Filter by title
         assert Review.query.filter_by(title='a').count() == 1
         assert Review.query.filter_by(title='c').count() == 0
-        # By content
+        # Filter by content
         assert Review.query.filter_by(content='a is a good album').count() == 1
         assert Review.query.filter_by(content='a is agood album').count() == 0
-        # By star_rating
+        # Filter by star_rating
         assert Review.query.filter_by(star_rating=5).count() == 1
         assert Review.query.filter_by(star_rating=1).count() == 1
         assert Review.query.filter_by(star_rating=4).count() == 0
 
 def test_review_info_update(app):
     """
-    Tests that album model's values can be updated
+    Tests that Album model's values can be updated
     """
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
@@ -585,7 +582,7 @@ def test_review_info_update(app):
         db.session.add(review)
         db.session.commit()
         
-        # Update All values
+        # Update all values
         review = Review.query.first()
         review.title = 'b'
         review.content = 'c'
@@ -619,25 +616,25 @@ def test_review_delete(app):
 
 def test_tag_column(app):
     """
-    Test the tag column's constraints
+    Test the attribute constraints of Tag model
     """
     with app.app_context():
         # Check foreign key violations
         tag = _get_tag()
         violation1 = _get_user('a', 'a', 'a'*64)
         violation2 = _get_review('a', 'a', 5, '10-10-2020')
-        # User
+        # FK to user cannot reference anything else but an instance of User model
         with pytest.raises(ValueError):
             tag.user = violation2
-        # Album
+        # FK to review cannot reference anything else but an instance of Review model
         with pytest.raises(ValueError):
             tag.review = violation1
-        # Check Null foreign keys
+        # Check that Null foreign keys are not allowed
         db.session.add(tag)
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
-        # ID pointing to non-existent entity
+        # FK pointing to non-existent entity (not allowed)
         tag = _get_tag()
         tag.user_id = 100
         tag.review_id = 200
@@ -671,20 +668,20 @@ def test_tag_retrieve(app):
         db.session.add(tag2)
         db.session.commit()
 
-        # By user
+        # Filter by user
         assert Tag.query.filter_by(user=user).count() == 2
         assert Tag.query.filter_by(user=user2).count() == 0
-        # By review
+        # Filter by review
         assert Tag.query.filter_by(review=review).count() == 1
         assert Tag.query.filter_by(review=review2).count() == 1
-        # By meaning
+        # Filter by meaning
         assert Tag.query.filter_by(meaning="useful").count() == 1
         assert Tag.query.filter_by(meaning="not useful").count() == 1
         assert Tag.query.filter_by(meaning="usefull").count() == 0
 
 def test_tag_info_update(app):
     """
-    Tests that album model's values can be updated
+    Tests that Tag model's values can be updated
     """
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
@@ -698,7 +695,7 @@ def test_tag_info_update(app):
         db.session.add(tag)
         db.session.commit()
         
-        # Update All values
+        # Update all values
         tag = Tag.query.first()
         tag.meaning = 'not useful'
         db.session.add(tag)
@@ -729,7 +726,7 @@ def test_tag_delete(app):
 
 def test_ondelete(app):
     """
-    Tests the models' ondeletes
+    Tests that onDelete works as expected
     """
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
@@ -755,7 +752,7 @@ def test_ondelete(app):
         assert len(user.tags) == 0
         assert (len(review.tags)) == 0
 
-        # Test that tag and review is removed from user and album once review is removed
+        # Test that tag and review are removed from user and album once review is removed
         tag = _get_tag()
         tag.user = user
         tag.review = review
@@ -808,7 +805,8 @@ def test_ondelete(app):
 
 def test_onupdate(app):
     """
-    Tests the models' onupdate
+    Tests that onUpdate works as expected
+    (Testing onUpdate is quite trivial in this case, as FKs point to the primary keys, which should not ever change)
     """
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
@@ -825,7 +823,7 @@ def test_onupdate(app):
         db.session.add(tag)
         db.session.commit()
 
-        # Test that updating user and album id updates user and album in review and tag
+        # Test that updating user and album id updates user and album FKs in review and tag
         user = User.query.first()
         album = Album.query.first()
         user.id = 10
