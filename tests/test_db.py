@@ -11,6 +11,7 @@ from revmusic.models import User, Album, Review, Tag
 
 # RUN WITH: $ python3 -m pytest tests
 
+# The example python project provided by the course assistants was a basis for this
 @pytest.fixture
 def app():
     """
