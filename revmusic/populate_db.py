@@ -32,4 +32,7 @@ def populate_db_cmd():
     except OperationalError:
         print('SQL Operational Error happend! Has the db been initialized?')
         return
+    except IntegrityError:
+        print('SQL Integrity Erroor happened! Is the db empty?')
+        return
     print("Done populating!")

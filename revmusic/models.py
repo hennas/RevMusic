@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 # The database is required here. Defined in __init__.py
 from . import db
 
+
 class User(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
@@ -22,7 +23,8 @@ class User(db.Model):
     
     def __repr__(self):
         return "{} <{}>".format(self.username, self.id)
-        
+
+
 class Album(db.Model):
     
     __table_args__ = (db.UniqueConstraint("title", "artist", name="_album_to_artist_uc"), )
@@ -38,7 +40,8 @@ class Album(db.Model):
 
     def __repr__(self):
         return "{} <{}> by {}".format(self.title, self.id, self.artist)
-        
+
+
 class Review(db.Model):
     
     __table_args__ = (db.UniqueConstraint("user_id", "album_id", name="_user_to_albumreview_uc"), )
@@ -57,7 +60,8 @@ class Review(db.Model):
 
     def __repr__(self):
         return "{} <{}>".format(self.title, self.id)
-    
+
+
 class Tag(db.Model):
     
     __table_args__ = (db.UniqueConstraint("user_id", "review_id", name="_usertag_to_review_uc"), )
@@ -72,6 +76,7 @@ class Tag(db.Model):
 
     def __repr__(self):
         return "{} tag <{}> by {}".format(self.meaning, self.id, self.user.username)
+
 
 @click.command(name="init-db", help="Calls create_all() on the database")
 @with_appcontext

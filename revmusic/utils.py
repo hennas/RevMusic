@@ -1,5 +1,6 @@
 import datetime
 
+
 def to_date(date_str):
     """
     Convert a "%dd-%mm-%YYYY" string to a Date
