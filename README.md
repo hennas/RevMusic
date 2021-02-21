@@ -36,7 +36,7 @@ $ flask populate-db
 
 ## Testing the database
 
-The database tests can be ran with the following command:
+The database tests can be run with the following command:
 ```bash
 $ python3 -m pytest tests 
 # OR with coverage
