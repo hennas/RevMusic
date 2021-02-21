@@ -692,6 +692,12 @@ def test_tag_retrieve(app):
         tag2 = _get_tag('not useful')
         tag2.user = user
         tag2.review = review2
+        db.session.add(user)
+        db.session.add(user2)
+        db.session.add(album)
+        db.session.add(user2)
+        db.session.add(review)
+        db.session.add(review2)
         db.session.add(tag)
         db.session.add(tag2)
         db.session.commit()
@@ -720,6 +726,9 @@ def test_tag_info_update(app):
         tag = _get_tag()
         tag.user = user
         tag.review = review
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
         db.session.add(tag)
         db.session.commit()
         
@@ -745,6 +754,9 @@ def test_tag_delete(app):
         review.album = album
         tag.user = user
         tag.review = review
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
         db.session.add(tag)
         db.session.commit()
         tag = Tag.query.first()
