@@ -643,6 +643,33 @@ def test_tag_column(app):
             db.session.commit()
         db.session.rollback()
 
+def test_tag_uniqueness(app):
+    """
+    Tests the uniqueness constraint of the Tag model
+    """
+    with app.app_context():
+        user = _get_user('a', 'a', 'a'*64)
+        album = _get_album('a', 'a')
+        review = _get_review('a', 'a', 1, '10-10-2020')
+        review.user = user
+        review.album = album
+        tag = _get_tag()
+        tag.user = user
+        tag.review = review
+        tag2 = _get_tag('not useful')
+        tag2.user = user
+        tag2.review = review
+
+        # Same user and review; uniqueness constraint requires that the same user cannot tag the same review twice
+        db.session.add(user)
+        db.session.add(album)
+        db.session.add(review)
+        db.session.add(tag)
+        db.session.add(tag2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
+        db.session.rollback()
+        
 def test_tag_retrieve(app):
     """
     Test retrieving existing tags with different filters
