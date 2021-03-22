@@ -54,16 +54,16 @@
 - Discussed our problem related to adding Tags
   - Assistant said he will try to come up with a solution and email it to us
 - Going through our Apiary. Everything seemed correct
-- Assistant noted that we have a lot of resources and only 2 peole, so all not all of them have to be implemented
-- Assistant noted that code should be reused as much as possible in the APi implementation
+- Assistant noted that we have a lot of resources and only 2 people, so not all of them have to be implemented
+- Assistant noted that code should be reused as much as possible in the API implementation (from exercise 3)
 
 ### Action points
 *List here the actions points discussed with assistants*
 - If assistant comes up with a solution to the Tag problem, use it; otherwise leave as is
 - Explain the Tag problem in the wiki
 - Add example to the Addressability and Uniform Interface sections
-- Change review_id to URL in Tag's Apiary documentation
-- Implement the most important resources first and test them, then move on to others
+- Change review_id to review URL in Tag's Apiary documentation
+- Implement the most important resources first and test them (review + album resources), then move on to others
 
 ### Comments from staff
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
