@@ -6,7 +6,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, StatementError
 
 from revmusic import create_app, db
-from revmusic.utils import to_date, to_time
+from revmusic.utils import to_date, to_time, to_datetime
 from revmusic.models import User, Album, Review, Tag
 
 
@@ -62,7 +62,7 @@ def _get_album(title='a', unique_name='a', artist='a', publication_date='2021-01
         genre=genre
     )
 
-def _get_review(title='a', identifier='a', content='a', star_rating=5, submission_date='2021-01-01'):
+def _get_review(title='a', identifier='a', content='a', star_rating=5, submission_date='2021-01-01 10:10:10'):
     """
     Generate a review
     """
@@ -71,17 +71,17 @@ def _get_review(title='a', identifier='a', content='a', star_rating=5, submissio
         identifier=identifier,
         content=content,
         star_rating=star_rating,
-        submission_date=to_date(submission_date)
+        submission_date=to_datetime(submission_date)
     )
 
-def _get_tag(identifier='a', meaning='useful', date_created='2021-01-01'):
+def _get_tag(identifier='a', meaning='useful', date_created='2021-01-01 10:10:10'):
     """
     Generate a tag
     """
     return Tag(
         identifier=identifier,
         meaning=meaning,
-        date_created=to_date(date_created)
+        date_created=to_datetime(date_created)
     )
 
 #######
@@ -628,7 +628,7 @@ def test_review_info_update(app):
         review.title = 'b'
         review.content = 'c'
         review.star_rating = 1
-        review.submission_date = to_date('2021-10-10')
+        review.submission_date = to_datetime('2021-10-10 13:13:13')
         db.session.add(review)
         db.session.commit()
         
@@ -636,7 +636,7 @@ def test_review_info_update(app):
         assert review.title == 'b'
         assert review.content == 'c'
         assert review.star_rating == 1
-        assert review.submission_date == to_date('2021-10-10')
+        assert review.submission_date == to_datetime('2021-10-10 13:13:13')
 
 def test_review_delete(app):
     """

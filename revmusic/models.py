@@ -54,7 +54,7 @@ class Review(db.Model):
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.Text, nullable=False)
     star_rating = db.Column(db.Integer, nullable=False)
-    submission_date = db.Column(db.Date, nullable=False)
+    submission_date = db.Column(db.DateTime, nullable=False)
     
     user = db.relationship("User", back_populates="reviews")
     album = db.relationship("Album", back_populates="reviews")
@@ -73,7 +73,7 @@ class Tag(db.Model):
     user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     review_id = db.Column(db.ForeignKey("review.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     meaning = db.Column(db.String(10), nullable=False, default="useful")
-    date_created = db.Column(db.Date, nullable=False)
+    date_created = db.Column(db.DateTime, nullable=False)
     
     user = db.relationship("User", back_populates="tags")
     review = db.relationship("Review", back_populates="tags")
