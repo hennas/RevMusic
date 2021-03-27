@@ -1,14 +1,14 @@
 import os
-from flask import Flask
+import json
+from flask import Flask, Response, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
-from .constants import *
-
 # Initialize the database object
 db = SQLAlchemy()
 
+from .constants import *
 
 # The example project provided by the course assistants was a basis for this
 def create_app(test_config=None):
@@ -32,7 +32,7 @@ def create_app(test_config=None):
 
     # Add database to the app
     db.init_app(app)
-    # Force foreing key usage
+    # Force foreing key usageUserCo
     @event.listens_for(Engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
@@ -59,5 +59,23 @@ def create_app(test_config=None):
     @app.route('/profiles/<profile>/')
     def send_profile(profile):
         return 'You requested {} profile'.format(profile)
+
+
+    from revmusic.mason import RevMusicBuilder
+    # Add entry point
+    @app.route('/api/', methods=["GET"])
+    def entry_point():
+        """
+        Returns Mason with the controls:
+        - revmusic:reviews-all
+        - revmusic:albums-all
+        - revmusic:users-all
+        """    
+        body = RevMusicBuilder()
+        body.add_namespace('revmusic', LINK_RELATIONS_URL)
+        body.add_control_reviews_all()
+        body.add_control_albums_all()
+        body.add_control_users_all()
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     return app

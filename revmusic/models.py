@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 # The database is required here. Defined in __init__.py
-from . import db
+from revmusic import db
 
 
 class User(db.Model):
@@ -23,6 +23,27 @@ class User(db.Model):
     
     def __repr__(self):
         return "{} <{}>".format(self.username, self.id)
+
+    @staticmethod
+    def get_schema():
+        schema = {
+            'type': 'object',
+            'required': ['username', 'email', 'password']
+        }
+        props = schema['properties'] = {}
+        props['username'] = {
+            'description': 'Username, will always be lowercased',
+            'type': 'string'
+        }
+        props['email'] = {
+            "description": "User's email address",
+            "type": "string"
+        }
+        props['password'] = {
+            "description": "SHA256 hash of the user's password",
+            "type": "string"
+        }
+        return schema
 
 
 class Album(db.Model):
@@ -41,6 +62,41 @@ class Album(db.Model):
 
     def __repr__(self):
         return "{} <{}> by {}".format(self.title, self.id, self.artist)
+
+    @staticmethod
+    def get_schema():
+        schema = {
+            'type': 'object',
+            'required': ["unique_name", "title", "artist"]
+        }
+        props = schema['properties'] = {}
+        props['unique_name'] = {
+            'description': 'Unique name for an album. Preferably title lowercased, if taken, title_artist',
+            'type': 'string'
+        }
+        props['title'] = {
+            "description": "Album title",
+            "type": "string"
+        }
+        props['artist'] = {
+            "description": "Album's artist",
+            "type": "string"
+        }
+        props['release'] = {
+            'description': 'Album\'s release date',
+            'type': 'string',
+            'pattern': "^[0-9]{4}-[01][0-9]-[0-3][0-9]$"
+        }
+        props['duration'] = {
+            "description": "The length of the album in ISO 8601 time format",
+            "type": "string",
+            "pattern": "^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]$"
+        }
+        props['genre'] = {
+            "description": "Album's genre",
+            "type": "string"
+        }
+        return schema
 
 
 class Review(db.Model):
@@ -63,6 +119,30 @@ class Review(db.Model):
     def __repr__(self):
         return "{} <{}>".format(self.title, self.id)
 
+    @staticmethod
+    def get_schema():
+        schema = {
+            'type': 'object',
+            'required': ["user", "title", "content", "star_rating"]
+        }
+        props = schema['properties'] = {}
+        props['user'] = {
+            'description': 'Username of the reviewer',
+            'type': 'string'
+        }
+        props['title'] = {
+            "description": "Review title",
+            "type": "string"
+        }
+        props['content'] = {
+            "description": "Written content for the review",
+            "type": "string"
+        }
+        props['star_rating'] = {
+            "description": "The number of stars the reviewer gives for the album. Between 1-5",
+            "type": "integer"
+        }
+        return schema
 
 class Tag(db.Model):
     
@@ -80,6 +160,25 @@ class Tag(db.Model):
 
     def __repr__(self):
         return "{} tag <{}> by {}".format(self.meaning, self.id, self.user.username)
+
+    @staticmethod
+    def get_schema():
+        schema = {
+            'type': 'object',
+            'required': ['review_id', 'meaning']
+        }
+        props = schema['properties'] = {}
+        props['review_id'] = {
+            'description': 'The identifier for the review for which the tag is to be added',
+            'type': 'string'
+        }
+        props['meaning'] = {
+            "description": "The meaning of the tag, either 'useful' or 'not useful'",
+            "type": "string",
+            "enum": ["useful", "not useful"],
+            "default": "useful"
+        }
+        return schema
 
 
 @click.command(name="init-db", help="Calls create_all() on the database")
