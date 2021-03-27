@@ -28,7 +28,7 @@ def to_datetime(datetime_str):
     try:
         return datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
     except:
-        print("Incorrect datetime format: {}".format(datetime_str))
+        #print("Incorrect datetime format: {}".format(datetime_str))
         return None
 
 def to_time(time_str):
