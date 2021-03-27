@@ -682,6 +682,12 @@ def test_tag_column(app):
         with pytest.raises(StatementError):
             db.session.commit()
         db.session.rollback()
+        # date_created can't be null
+        tag = _get_tag(date_created=None)
+        db.session.add(tag)
+        with pytest.raises(StatementError):
+            db.session.commit()
+        db.session.rollback()
 
 def test_tag_uniqueness(app):
     """
