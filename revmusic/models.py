@@ -30,10 +30,11 @@ class Album(db.Model):
     __table_args__ = (db.UniqueConstraint("title", "artist", name="_album_to_artist_uc"), )
     
     id = db.Column(db.Integer, primary_key=True)
+    unique_name = db.Column(db.String(200), unique=True, nullable=False)
     title = db.Column(db.String(150), nullable=False)
     artist = db.Column(db.String(50), nullable=False)
     publication_date = db.Column(db.Date, nullable=True)
-    duration = db.Column(db.Integer, nullable=True)
+    duration = db.Column(db.Time, nullable=True)
     genre = db.Column(db.String(50), nullable=True)
     
     reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="album")
@@ -47,6 +48,7 @@ class Review(db.Model):
     __table_args__ = (db.UniqueConstraint("user_id", "album_id", name="_user_to_albumreview_uc"), )
     
     id = db.Column(db.Integer, primary_key=True)
+    identifier = db.Column(db.String, unique=True, nullable=False)
     user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     album_id = db.Column(db.ForeignKey("album.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     title = db.Column(db.String(150), nullable=False)
@@ -67,9 +69,11 @@ class Tag(db.Model):
     __table_args__ = (db.UniqueConstraint("user_id", "review_id", name="_usertag_to_review_uc"), )
     
     id = db.Column(db.Integer, primary_key=True)
+    identifier = db.Column(db.String, unique=True, nullable=False)
     user_id = db.Column(db.ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     review_id = db.Column(db.ForeignKey("review.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
     meaning = db.Column(db.String(10), nullable=False, default="useful")
+    date_created = db.Column(db.Date, nullable=False)
     
     user = db.relationship("User", back_populates="tags")
     review = db.relationship("Review", back_populates="tags")
