@@ -41,14 +41,16 @@ def populate_db_cmd():
     tag2.user = user1
     tag2.review = review2
     # Add to DataBase
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.add(album1)
-    db.session.add(album2)
-    db.session.add(review1)
-    db.session.add(review2)
-    db.session.add(tag1)
-    db.session.add(tag2)
-    db.session.commit()
-
-    print("Done populating!")
+    try:
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.add(album1)
+        db.session.add(album2)
+        db.session.add(review1)
+        db.session.add(review2)
+        db.session.add(tag1)
+        db.session.add(tag2)
+        db.session.commit()
+        print("Done populating!")
+    except:
+        print("Populating the database failed. Is the database initialized and empty? Try running db-init and retry after that.")

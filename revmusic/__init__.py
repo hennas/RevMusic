@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
+from .constants import *
+
 # Initialize the database object
 db = SQLAlchemy()
 
@@ -37,12 +39,25 @@ def create_app(test_config=None):
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
         
-    from . import models
-    # First run $ export FLASK_APP=revmusic/__init__.py
     # Make "$ flask init-db" callable. Must be called before running the app
+    from . import models
     app.cli.add_command(models.init_db_cmd)
     # Make "$ flask populate-db" callable.
     from . import populate_db
     app.cli.add_command(populate_db.populate_db_cmd)
+
+    # Register API blueprint
+    from . import api
+    app.register_blueprint(api.api_blueprint) 
+
+    # Set link relations URL
+    @app.route(LINK_RELATIONS_URL)
+    def send_link_relations():
+        return 'link relations'
+        
+    # Set profiles URL
+    @app.route('/profiles/<profile>/')
+    def send_profile(profile):
+        return 'You requested {} profile'.format(profile)
 
     return app
