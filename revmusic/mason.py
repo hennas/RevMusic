@@ -1,4 +1,5 @@
 from flask import Response, request, url_for
+import json
 
 from revmusic.models import *
 from revmusic.constants import *
@@ -130,16 +131,18 @@ class RevMusicBuilder(MasonBuilder):
     # REVIEWS
     ###
 
-    def add_control_reviews_all(self):
+    def add_control_reviews_all(self, is_self=False):
         """
-        revmusic:reviews-all
+        revmusic:reviews-all OR self
         """
+        control = 'revmusic:reviews-all'
+        if control:
+            control = 'self'
         self.add_control(
             # TODO: ADD THE MISSING STUFF HERE
-            'revmusic:reviews-all',
+            control,
             href=url_for('api.reviewcollection') + '?{filterby,searchword,timeframe,nlatest}',
             title='All reviews',
             isHrefTemplate=True,
             schema=REVIEW_ALL_SCHEMA,
         )
-    

@@ -21,7 +21,7 @@ REVIEW_ALL_SCHEMA = {
             "type": "string"
         },
         "timeframe" : {
-            "description": "Define the timeframe in which returned reviews should have been submitted",
+            "description": "Define the timeframe in which returned reviews should have been submitted. Format is ddmmyyyy or ddmmyyyy_ddmmyyyy",
             "type": "string"
         },
         "nlatest" : {

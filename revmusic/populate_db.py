@@ -25,10 +25,10 @@ def populate_db_cmd():
     album1 = to_album('iäti vihassa ja kunniassa', 'Iäti Vihassa ja Kunniassa', 'Vitsaus', to_date('2004-12-12'), to_time('01:08:06'), 'Black Metal')
     album2 = to_album('stc is the greatest', 'STC is the Greatest', 'Spamtec', to_date('2004-01-01'), to_time('01:01:00'), 'Nerdcore')
     # Create 2 reviews
-    review1 = to_review('review_27032021133658', 'Finally some good black metal!', 'This is so good! Much better than posers like Wolves in the Throne Room', 5, to_datetime('2021-03-27 13:36:56'))
-    review2 = to_review('review_270320211334445', 'STC STILL THE GREATES!', 'I still listen to YTC and Phlow after all these years because this album is so good', 5, to_datetime('2021-03-27 13:44:45'))
+    review1 = to_review('review_27032021133658', 'Finally some good black metal!', 'This is so good! Much better than posers like Wolves in the Throne Room', 5, to_datetime('2021-03-25 13:36:56'))
+    review2 = to_review('review_250320211334445', 'STC STILL THE GREATES!', 'I still listen to YTC and Phlow after all these years because this album is so good', 5, to_datetime('2021-03-27 13:44:45'))
     # Create 2 tags
-    tag1 = to_tag('tag_27032021134913', 'usefull', to_datetime('2021-03-27 13:49:13'))
+    tag1 = to_tag('tag_25032021134913', 'usefull', to_datetime('2021-03-25 13:49:13'))
     tag2 = to_tag('tag_27032021135025', 'not usefull', to_datetime('2021-03-27 13:50:25'))
     # Set review relations
     review1.user = user1
