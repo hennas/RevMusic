@@ -1,7 +1,8 @@
 import os
 import pytest
 import tempfile
-from sqlalchemy import event
+import datetime
+from sqlalchemy import event, func
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, StatementError
 
@@ -578,7 +579,7 @@ def test_review_retrieve(app):
         review1.user = user
         review1.album = album
 
-        review2 = _get_review('b', 'b', 'b is a bad album', 1)
+        review2 = _get_review('b', 'b', 'b is a bad album', 1, '2022-02-01 00:00:00')
         review2.user = user
         review2.album = album2
 
@@ -604,6 +605,9 @@ def test_review_retrieve(app):
         # Filter by content
         assert Review.query.filter_by(content='a is a good album').count() == 1
         assert Review.query.filter_by(content='a is agood album').count() == 0
+        # Filter by submission_date
+        assert Review.query.filter(func.date(Review.submission_date) >= '2018-01-01').filter(func.date(Review.submission_date) <= '2022-02-01').count() == 2
+        assert Review.query.filter(func.date(Review.submission_date) >= '2018-01-01').filter(func.date(Review.submission_date) <= '2022-01-01').count() == 1
         # Filter by star_rating
         assert Review.query.filter_by(star_rating=5).count() == 1
         assert Review.query.filter_by(star_rating=1).count() == 1
