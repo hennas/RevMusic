@@ -136,7 +136,7 @@ class RevMusicBuilder(MasonBuilder):
         revmusic:reviews-all OR self
         """
         control = 'revmusic:reviews-all'
-        if control:
+        if is_self:
             control = 'self'
         self.add_control(
             # TODO: ADD THE MISSING STUFF HERE
