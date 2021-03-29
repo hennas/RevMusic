@@ -57,11 +57,15 @@ def client():
 
 # TODO: ADD THE _get functions
 
-def _get_user_json():
+def _get_user_json(user='itsame', email='itm@gmail.com', pwd='9294ab38039f60d2ec53822fb46b52c663af7ea478f4d17bf43da44ede5e166c'):
+    """
+    Returns a json for a user.
+    Format: {'username': user, 'email': email, 'password': pwd}
+    """
     return {
-        "username": "itsame",
-        "email": "itm@gmail.com",
-        "password": "9294ab38039f60d2ec53822fb46b52c663af7ea478f4d17bf43da44ede5e166c"
+        "username": user,
+        "email": email,
+        "password": pwd
     }
 
 #######
@@ -128,12 +132,13 @@ class TestUserCollection(object):
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 201
         # Check that the headers is correct
-        assert resp.headers['Location'].endswith(self.RESOURCE_URL + user['name'] + '/')
+        assert resp.headers['Location'].endswith(self.RESOURCE_URL + user['username'] + '/')
         # Check that the user was actually added
         resp = client.get(resp.headers['Location'])
         assert resp.status_code == 200
         body = json.loads(resp.data)
-        print(body)
+        assert body['username'] == user['username']
+        assert body['email'] == user['email']
 
 
 
