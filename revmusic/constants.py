@@ -1,5 +1,5 @@
 MASON = 'application/vnd.mason+json'
-LINK_RELATIONS_URL = '/revmusic/link-relations#'
+LINK_RELATIONS_URL = '/revmusic/link-relations/'
 
 USER_PROFILE = '/profiles/user/'
 ALBUM_PROFILE = '/profiles/album/'

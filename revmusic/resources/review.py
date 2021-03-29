@@ -51,7 +51,6 @@ class ReviewCollection(Resource):
                 # TODO: CHECK ERROR NUMBER
                 print(e)
                 return create_error_response(415, 'Incorrect timeframe format', 'You provided an icorrect timeframe format. Please fix that >:(')
-        print(timeframe)
 
         # Error handling for nlatest is implemented by flask, since the type has been set to int
 
@@ -61,7 +60,7 @@ class ReviewCollection(Resource):
             # No fitlerby
             if len(timeframe) < 1:
                 # No timeframe provided, return all or nlatest
-                reviews = review.query.limit(nlatest).all()
+                reviews = Review.query.limit(nlatest).all()
             elif len(timeframe) == 1:
                 # One time provided, return all or nlatest after that 
                 reviews = Review.query.filter(func.date(Review.submission_date) >= timeframe[0])\
