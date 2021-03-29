@@ -118,7 +118,7 @@ class TestEntryPoint(object):
 
     def test_get(self, client):
         print('\n==================RUNNING API TESTS===================')
-        print('Testing GET for EntryPoint...')
+        print('Testing GET for EntryPoint: ', end='')
         # Check that request works properly, i.e. return 200
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -137,7 +137,7 @@ class TestUserCollection(object):
     RESOURCE_NAME = 'UserCollection'
 
     def test_get(self, client):
-        print('\nTesting GET for {}...'.format(self.RESOURCE_NAME))
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
         # Check that request works properly, i.e. return 200
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
@@ -162,7 +162,7 @@ class TestUserCollection(object):
             assert 'href' in item['@controls']['self']
 
     def test_valid_post(self, client):
-        print('\nTesting valid POST for {}...'.format(self.RESOURCE_NAME))
+        print('\nTesting valid POST for {}: '.format(self.RESOURCE_NAME), end='')
         user = _get_user_json()
         # Check that a valid resonse succseed
         resp = client.post(self.RESOURCE_URL, json=user)
@@ -177,13 +177,13 @@ class TestUserCollection(object):
         assert body['email'] == user['email']
 
     def test_wrong_mediatype_post(self, client):
-        print('\nTesting wrong mediatype POST for {}...'.format(self.RESOURCE_NAME))
+        print('\nTesting wrong mediatype POST for {}: '.format(self.RESOURCE_NAME), end='')
         user = _get_user_json()
         resp = client.post(self.RESOURCE_URL, data=json.dumps(user))
         assert resp.status_code == 415
 
     def test_missing_post(self, client):
-        print('\nTesting missing info POST for {}...'.format(self.RESOURCE_NAME))
+        print('\nTesting missing info POST for {}: '.format(self.RESOURCE_NAME), end='')
         # Missing username
         user = _get_user_json()
         del user['username']
@@ -201,7 +201,7 @@ class TestUserCollection(object):
         assert resp.status_code == 400
 
     def test_incorrect_post(self, client):
-        print('\nTesting invalid values POST for {}...'.format(self.RESOURCE_NAME))
+        print('\nTesting invalid values POST for {}: '.format(self.RESOURCE_NAME), end='')
         # Invalid email
         user = _get_user_json()
         user['email'] = 'a'
@@ -231,7 +231,7 @@ class TestUserCollection(object):
         assert resp.status_code == 400
 
     def test_already_exists_post(self, client):
-        print('\nTesting already exists POST for {}...'.format(self.RESOURCE_NAME))
+        print('\nTesting already exists POST for {}: '.format(self.RESOURCE_NAME), end='')
         user = _get_user_json()
         resp = client.post(self.RESOURCE_URL, json=user)
         # Try to re-register same user

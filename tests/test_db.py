@@ -95,7 +95,7 @@ def test_create_instances(app):
     using valid values. Also checks that relationships are saved correctly
     """
     print('\n\n================RUNNING DATABASE TESTS================')
-    print('Testing basic instance and relation creation...')
+    print('Testing basic instance and relation creation: ', end='')
     with app.app_context():
         # Create the instances
         user = _get_user()
@@ -144,7 +144,7 @@ def test_user_column(app):
     """
     Tests the attribute constraints of the User model
     """
-    print('\nTesting the user column...')
+    print('\nTesting the user column: ', end='')
     with app.app_context():
         # Check that username can't be null
         user = _get_user(username=None)
@@ -181,7 +181,7 @@ def test_user_uniqueness(app):
     """
     Test that users are always unique, as they should be
     """
-    print('\nTesting user uniqueness...')
+    print('\nTesting user uniqueness: ', end='')
     with app.app_context():
         # Test based on username
         user1 = _get_user(email='a')
@@ -222,7 +222,7 @@ def test_user_retrieve(app):
     """
     Test retrieving existing users with different filters
     """
-    print('\nTesting user retrieving...')
+    print('\nTesting user retrieving: ', end='')
     with app.app_context():
         user1 = _get_user('test user', 'tester@gmail.com', 'a'*64)
         user2 = _get_user('tester', 'test_user@gmail.com', 'b'*64)
@@ -244,7 +244,7 @@ def test_user_info_update(app):
     """
     Tests that User model's values can be updated
     """
-    print('\nTesting user info updating...')
+    print('\nTesting user info updating: ', end='')
     with app.app_context():
         user = _get_user()
         db.session.add(user)
@@ -267,7 +267,7 @@ def test_user_delete(app):
     """
     Test that a user can be deleted
     """
-    print('\nTesting user deletion')
+    print('\nTesting user deletion: ', end='')
     with app.app_context():
         user = _get_user()
         db.session.add(user)
@@ -282,7 +282,7 @@ def test_album_column(app):
     """
     Tests the attribute constraints of the Album model
     """
-    print('\nTesting the album column...')
+    print('\nTesting the album column: ', end='')
     with app.app_context():
         # Check that publication_date, duration and genre can be Null
         album1 = _get_album(publication_date=None, duration=None, genre=None)
@@ -337,7 +337,7 @@ def test_album_uniqueness(app):
     """
     Tests the uniqueness constraint of the Album model
     """
-    print('\nTesting album uniqueness...')
+    print('\nTesting album uniqueness: ', end='')
     with app.app_context():
         album1 = _get_album()
         album2 = _get_album()
@@ -371,7 +371,7 @@ def test_album_retrieve(app):
     """
     Test retrieving existing albums with different filters
     """
-    print('\nTesting album retrieving...')
+    print('\nTesting album retrieving: ', end='')
     with app.app_context():
         album1 = _get_album('Victory or Valhalla', 'victory or valhalla', 'Vuohikuu', '2020-10-10', '10:10:10', 'black metal')
         album2 = _get_album('Polla Stelaris', 'polla stelaris', 'Vuohikuu', '2001-10-10', '10:10:10', 'black metal')
@@ -407,7 +407,7 @@ def test_album_info_update(app):
     """
     Tests that Album model's values can be updated
     """
-    print('\nTesting album info updating...')
+    print('\nTesting album info updating: ', end='')
     with app.app_context():
         album = _get_album()
         db.session.add(album)
@@ -434,7 +434,7 @@ def test_album_delete(app):
     """
     Test that a album can be deleted
     """
-    print('\nTesting album deletion...')
+    print('\nTesting album deletion: ', end='')
     with app.app_context():
         album = _get_album()
         db.session.add(album)
@@ -448,7 +448,7 @@ def test_review_column(app):
     """
     Tests the attribute constraints for Review model
     """
-    print('\nTesting review column...')
+    print('\nTesting review column: ', end='')
     with app.app_context():
         # Test that identifier can't be null
         review = _get_review(identifier=None)
@@ -530,7 +530,7 @@ def test_review_uniqueness(app):
     """
     Test the Review model's uniqueness constraint
     """
-    print('\nTesting review uniqueness...')
+    print('\nTesting review uniqueness: ', end='')
     with app.app_context():
         user1 = _get_user('a', 'a', 'a'*64)
         user2 = _get_user('b', 'b', 'a'*64)
@@ -567,7 +567,7 @@ def test_review_retrieve(app):
     """
     Test retrieving existing reviews with different filters
     """
-    print('\nTesting review retrieving...')
+    print('\nTesting review retrieving: ', end='')
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         user2 = _get_user('b', 'b', 'b'*64)
@@ -617,7 +617,7 @@ def test_review_info_update(app):
     """
     Tests that Album model's values can be updated
     """
-    print('\nTesting review info updating...')
+    print('\nTesting review info updating: ', end='')
     with app.app_context():
         user = _get_user()
         album = _get_album()
@@ -646,7 +646,7 @@ def test_review_delete(app):
     """
     Tests that a review can be deleted
     """
-    print('\nTesting review deletion...')
+    print('\nTesting review deletion: ', end='')
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         album = _get_album('a', 'a')
@@ -664,7 +664,7 @@ def test_tag_column(app):
     """
     Test the attribute constraints of Tag model
     """
-    print('\nTesting the tag column...')
+    print('\nTesting the tag column: ', end='')
     with app.app_context():
         # Check foreign key violations
         tag = _get_tag()
@@ -697,7 +697,7 @@ def test_tag_uniqueness(app):
     """
     Tests the uniqueness constraint of the Tag model
     """
-    print('\nTesting tag uniqueness...')
+    print('\nTesting tag uniqueness: ', end='')
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         album = _get_album('a', 'a')
@@ -733,7 +733,7 @@ def test_tag_retrieve(app):
     """
     Test retrieving existing tags with different filters
     """
-    print('\nTesting tag retrieving...')
+    print('\nTesting tag retrieving: ', end='')
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         user2 = _get_user('b', 'b', 'b'*64)
@@ -779,7 +779,7 @@ def test_tag_info_update(app):
     """
     Tests that Tag model's values can be updated
     """
-    print('\nTesting tag info updating...')
+    print('\nTesting tag info updating: ', end='')
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         album = _get_album('a', 'a')
@@ -808,7 +808,7 @@ def test_tag_delete(app):
     """
     Tests that a tag can be deleted
     """
-    print('\nTesting tag delition...')
+    print('\nTesting tag delition: ', end='')
     with app.app_context():
         user = _get_user('a', 'a', 'a'*64)
         album = _get_album('a', 'a')
@@ -832,7 +832,7 @@ def test_ondelete(app):
     """
     Tests that onDelete works as expected
     """
-    print('\nTesting onDeletes...')
+    print('\nTesting onDeletes: ', end='')
     with app.app_context():
         user = _get_user()
         album = _get_album()
@@ -913,7 +913,7 @@ def test_onupdate(app):
     Tests that onUpdate works as expected
     (Testing onUpdate is quite trivial in this case, as FKs point to the primary keys, which should not ever change)
     """
-    print('\nTesting onUpdates...')
+    print('\nTesting onUpdates: ', end='')
     with app.app_context():
         user = _get_user()
         album = _get_album()
