@@ -25,7 +25,7 @@ class ReviewCollection(Resource):
         """
         body = RevMusicBuilder()
         body.add_namespace('revmusic', LINK_RELATIONS_URL)
-        body.add_control_reviews_all(is_self=True)
+        body.add_control_reviews_all('self')
         body.add_control_users_all()
         body.add_control_albums_all()
 
@@ -54,13 +54,12 @@ class ReviewCollection(Resource):
 
         # Error handling for nlatest is implemented by flask, since the type has been set to int
 
-
         # Handle filtering
         if not args['filterby']:
             # No fitlerby
             if len(timeframe) < 1:
                 # No timeframe provided, return all or nlatest
-                reviews = Review.query.limit(nlatest).all()
+                reviews = Review.query.order_by(Review.submission_date.desc()).limit(nlatest).all()
             elif len(timeframe) == 1:
                 # One time provided, return all or nlatest after that 
                 reviews = Review.query.filter(func.date(Review.submission_date) >= timeframe[0])\
@@ -128,5 +127,5 @@ class ReviewsByAlbum(Resource):
         pass
 
 class ReviewsByUser(Resource):
-    def get(self):
-        pass
+    def get(self, user):
+        return 'Received', 200

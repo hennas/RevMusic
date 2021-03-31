@@ -1,5 +1,5 @@
+import re
 import datetime
-from .api import api
 from .models import User, Album, Review, Tag
 
 
@@ -47,6 +47,27 @@ def to_time(time_str):
     except (IndexError, ValueError) as e:
         #print("Incorrect time format: {}".format(time_str))
         return None
+
+def is_valid_email(email):
+    """
+    Checks if a given email uses a correct format.
+    Return True if valid; False otherwise
+    """
+    # Source: https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+    regex = r'^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
+    if not re.search(regex, email):
+        return False
+    return True
+
+def is_valid_pwd(pwd):
+    """
+    Checks if a given password uses a correct format.
+    Return True if valid; False otherwise
+    """
+    if len(pwd) is not 64:
+        return False
+    return True
+
 
 def to_user(username, email, password):
     return User(

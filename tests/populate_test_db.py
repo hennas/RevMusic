@@ -13,7 +13,7 @@ def populate_db(db):
     #print("\nPopulating the database...")
     # Create 2 users
     user1 = to_user('admin', 'root@admin.com', '9e81d8ab3b3bc5853467dc1fd8a8afcbde52ed71b7c170d8802a86ffa9e226a8')
-    user2 = to_user('YTC FAN', 'best_rapper@gmail.com', 'b4fdf2ea4fd3222ea3ca97ebf3835de15c7a27b704eca26317a8cf2dba925bc1')
+    user2 = to_user('ytc fan', 'best_rapper@gmail.com', 'b4fdf2ea4fd3222ea3ca97ebf3835de15c7a27b704eca26317a8cf2dba925bc1')
     # Create 2 albums
     album1 = to_album('iäti vihassa ja kunniassa', 'Iäti Vihassa ja Kunniassa', 'Vitsaus', to_date('2004-12-12'), to_time('01:08:06'), 'Black Metal')
     album2 = to_album('stc is the greatest', 'STC is the Greatest', 'Spamtec', to_date('2004-01-01'), to_time('01:01:00'), 'Nerdcore')

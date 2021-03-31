@@ -80,14 +80,20 @@ def _check_namespace(client, body):
     resp = client.get(ns_href)
     assert resp.status_code == 200
 
+def _check_control_present(client, body, ctrl):
+    """
+    Checks that the given control is present in the message body. Includes href checking
+    """
+    assert '@controls' in body
+    assert ctrl in body['@controls']
+    assert 'href' in body['@controls'][ctrl]
+
 def _check_control_get_method(client, body, ctrl):
     """
     Check that the given control is found in the message body and 
     is accessable
     """
-    assert '@controls' in body
-    assert ctrl in body['@controls']
-    assert 'href' in body['@controls'][ctrl]
+    _check_control_present(client, body, ctrl)
     resp = client.get(body['@controls'][ctrl]['href'])
     assert resp.status_code == 200
 
@@ -95,8 +101,7 @@ def _check_control_post_method(client, body, ctrl):
     """
     Check that the given control is correct
     """
-    assert '@controls' in body
-    assert ctrl in body['@controls']
+    _check_control_present(client, body, ctrl)
     ctrl_obj = body['@controls'][ctrl]
     href = ctrl_obj['href']
     method = ctrl_obj['method'].lower()
@@ -108,7 +113,34 @@ def _check_control_post_method(client, body, ctrl):
     validate(body, schema)
     resp = client.post(href, json=body)
     assert resp.status_code == 201
-    
+
+def _check_control_delete_method(client, body, ctrl):
+    """
+    Check that the given control works correctly
+    """
+    _check_control_present(client, body, ctrl)
+    href = body['@controls'][ctrl]['href']
+    method = body['@controls'][ctrl]['method'].lower()
+    assert method == 'delete'
+    resp = client.delete(href)
+    assert resp.status_code == 204
+
+def _check_control_put_method(client, body, ctrl):
+    """
+    Check that the given control works correctly
+    """
+    _check_control_present(client, body, ctrl)
+    ctrl_obj = body['@controls'][ctrl]
+    href = ctrl_obj['href']
+    method = ctrl_obj['method'].lower()
+    encoding = ctrl_obj['encoding'].lower()
+    schema = ctrl_obj['schema']
+    assert method == 'put'
+    assert encoding == 'json'
+    body = _get_user_json(user=body['username'])
+    validate(body, schema)
+    resp = client.put(href, json=body)
+    assert resp.status_code == 204
 
 #######
 # TESTS
@@ -134,6 +166,7 @@ class TestEntryPoint(object):
 
 class TestUserCollection(object):
     RESOURCE_URL = '/api/users/'
+    INVALID_URL = '/api/userss/'
     RESOURCE_NAME = 'UserCollection'
 
     def test_get(self, client):
@@ -160,6 +193,10 @@ class TestUserCollection(object):
             _check_control_get_method(client, item, 'self')
             assert 'self' in item['@controls']
             assert 'href' in item['@controls']['self']
+
+        # Invalid URL
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
 
     def test_valid_post(self, client):
         print('\nTesting valid POST for {}: '.format(self.RESOURCE_NAME), end='')
@@ -203,32 +240,36 @@ class TestUserCollection(object):
     def test_incorrect_post(self, client):
         print('\nTesting invalid values POST for {}: '.format(self.RESOURCE_NAME), end='')
         # Invalid email
-        user = _get_user_json()
-        user['email'] = 'a'
+        user = _get_user_json(email='a')
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
 
-        user['email'] = 'a@a'
+        user = _get_user_json(email='a@a')
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
 
-        user['email'] = 'a@a.'
+        user = _get_user_json(email='a@a.')
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
 
-        user['email'] = '@.com'
+        user = _get_user_json(email='@a.com')
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
 
         # Invalid password
         user = _get_user_json()
-        user['password'] = 'a'*65
+        user = _get_user_json(pwd='a'*65)
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
 
-        user['password'] = 'a'*6
+        user = _get_user_json(pwd='a'*6)
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
+
+        # Invalid URL
+        user = _get_user_json()
+        resp = client.post(self.INVALID_URL, json=user)
+        assert resp.status_code == 404
 
     def test_already_exists_post(self, client):
         print('\nTesting already exists POST for {}: '.format(self.RESOURCE_NAME), end='')
@@ -239,29 +280,130 @@ class TestUserCollection(object):
         assert resp.status_code == 409
 
 
+class TestUserItem(object):
+    RESOURCE_URL = '/api/users/admin/'
+    INVALID_URL = '/api/users/swag_xd/'
+    RESOURCE_NAME = 'UserItem'
+
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'profile')
+        _check_control_get_method(client, body, 'collection')
+        _check_control_get_method(client, body, 'revmusic:reviews-by')
+        _check_control_put_method(client, body, 'edit')
+        _check_control_delete_method(client, body, 'revmusic:delete')
+        # Check that user info is included
+        assert body['username'] == 'admin'
+        assert body['email'] == 'root@admin.com'
+        # Also test an invalid UserItem url
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+    def test_valid_put(self, client):
+        print('\nTesting valid PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        user = _get_user_json()
+        # Check that a valid resonse succseed
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 204
+        # Check that the info was actually updated
+        resp = client.get('/api/users/itsame/')
+        assert resp.status_code == 200
+        body = json.loads(resp.data) 
+        assert body['username'] == user['username']
+        assert body['email'] == user['email']
+
+    def test_wrong_mediatype_put(self, client):
+        print('\nTesting wrong mediatype PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        user = _get_user_json()
+        resp = client.put(self.RESOURCE_URL, data=json.dumps(user))
+        assert resp.status_code == 415
+
+    def test_missing_put(self, client):
+        print('\nTesting missing info PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Missing username
+        user = _get_user_json()
+        del user['username']
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+        # Missing email
+        user = _get_user_json()
+        del user['email']
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+        # Missing password
+        user = _get_user_json()
+        del user['password']
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+    def test_incorrect_put(self, client):
+        print('\nTesting invalid values PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Invalid email
+        user = _get_user_json(email='a')
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        user = _get_user_json(email='a@a')
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        user = _get_user_json(email='a@a.')
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        user = _get_user_json(email='@a.com')
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        # Invalid password
+        user = _get_user_json()
+        user = _get_user_json(pwd='a'*65)
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        user = _get_user_json(pwd='a'*6)
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        # Invalid URL
+        user = _get_user_json()
+        resp = client.put(self.INVALID_URL, json=user)
+        assert resp.status_code == 404
+
+    def test_already_exists_put(self, client):
+        print('\nTesting already exists PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Try to edit to existing username
+        user = _get_user_json(user='YTC FAN')
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 409
+        # Try to edit to existing email
+        user = _get_user_json(user='admin', email='best_rapper@gmail.com')
+        resp = client.put(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 409
+
+    def test_delete(self, client):
+        print('\nTesting delete PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Valid deletion
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+        # Already deleted
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+        # Invalid URL
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class temp(object):
-    RESOURCE_URL = '/api/ /'
-    RESOURCE_NAME = ''
-
-    def test_a(self, client):
-        assert 1 == 1
 

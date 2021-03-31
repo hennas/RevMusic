@@ -75,12 +75,12 @@ class RevMusicBuilder(MasonBuilder):
     ###
     # USERS
     ###
-    def add_control_users_all(self):
+    def add_control_users_all(self, ctrl='revmusic:users-all'):
         """
         revmusic:users-all
         """
         self.add_control(
-            'revmusic:users-all',
+            ctrl,
             href=url_for('api.usercollection'),
             title='All users',
             method='GET'
@@ -97,6 +97,30 @@ class RevMusicBuilder(MasonBuilder):
             encoding='json',
             method='POST',
             schema=User.get_schema()
+        )
+
+    def add_control_edit_user(self, user):
+        """
+        edit
+        """
+        self.add_control(
+            'edit',
+            href=url_for('api.useritem', user=user),
+            title='Edit this user',
+            encoding='json',
+            method='PUT',
+            schema=User.get_schema()
+        )
+
+    def add_control_delete_user(self, user):
+        """
+        revmusic:delete
+        """
+        self.add_control(
+            'revmusic:delete',
+            href=url_for('api.useritem', user=user),
+            title='Delete this user',
+            method='DELETE'
         )
 
     ###
@@ -131,18 +155,27 @@ class RevMusicBuilder(MasonBuilder):
     # REVIEWS
     ###
 
-    def add_control_reviews_all(self, is_self=False):
+    def add_control_reviews_all(self, ctrl='revmusic:reviews-all'):
         """
-        revmusic:reviews-all OR self
+        revmusic:reviews-all
         """
-        control = 'revmusic:reviews-all'
-        if is_self:
-            control = 'self'
         self.add_control(
             # TODO: ADD THE MISSING STUFF HERE
-            control,
+            ctrl,
             href=url_for('api.reviewcollection') + '?{filterby,searchword,timeframe,nlatest}',
             title='All reviews',
+            method='GET',
             isHrefTemplate=True,
             schema=REVIEW_ALL_SCHEMA,
         )
+
+    def add_control_reviews_by(self, user, ctrl='revmusic:reviews-by'):
+        """
+        revmusic:reviews-by
+        """
+        self.add_control(
+            ctrl,
+            href=url_for('api.reviewsbyuser', user=user),
+            title='All reviews submitted by the user {}'.format(user)
+        )
+
