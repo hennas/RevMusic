@@ -14,9 +14,10 @@ def populate_db(db):
     # Create 2 users
     user1 = to_user('admin', 'root@admin.com', '9e81d8ab3b3bc5853467dc1fd8a8afcbde52ed71b7c170d8802a86ffa9e226a8')
     user2 = to_user('ytc fan', 'best_rapper@gmail.com', 'b4fdf2ea4fd3222ea3ca97ebf3835de15c7a27b704eca26317a8cf2dba925bc1')
-    # Create 2 albums
+    # Create 3 albums
     album1 = to_album('iäti vihassa ja kunniassa', 'Iäti Vihassa ja Kunniassa', 'Vitsaus', to_date('2004-12-12'), to_time('01:08:06'), 'Black Metal')
     album2 = to_album('stc is the greatest', 'STC is the Greatest', 'Spamtec', to_date('2004-01-01'), to_time('01:01:00'), 'Nerdcore')
+    album3 = Album(unique_name='rota', title='Rota', artist='Wyrd')
     # Create 2 reviews
     review1 = to_review('review_27032021133658', 'Finally some good black metal!', 'This is so good! Much better than posers like Wolves in the Throne Room', 5, to_datetime('2021-03-25 13:36:56'))
     review2 = to_review('review_250320211334445', 'STC STILL THE GREATES!', 'I still listen to YTC and Phlow after all these years because this album is so good', 5, to_datetime('2021-03-27 13:44:45'))
@@ -39,6 +40,7 @@ def populate_db(db):
         db.session.add(user2)
         db.session.add(album1)
         db.session.add(album2)
+        db.session.add(album3)
         db.session.add(review1)
         db.session.add(review2)
         db.session.add(tag1)

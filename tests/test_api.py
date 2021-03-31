@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import pytest
@@ -59,13 +60,25 @@ def client():
 
 def _get_user_json(user='itsame', email='itm@gmail.com', pwd='9294ab38039f60d2ec53822fb46b52c663af7ea478f4d17bf43da44ede5e166c'):
     """
-    Returns a json for a user.
-    Format: {'username': user, 'email': email, 'password': pwd}
+    Returns json for a user.
     """
     return {
         "username": user,
         "email": email,
         "password": pwd
+    }
+
+def _get_album_json(unique_name='test', title='Test', artist='Tester', release='2001-04-25', duration='00:44:35', genre='Test Metal'):
+    """
+    Returns json for a album.
+    """
+    return {
+        "unique_name": unique_name,
+        "title": title,
+        "artist": artist,
+        "release": release,
+        "duration": duration,
+        "genre": genre
     }
 
 def _check_namespace(client, body):
@@ -97,7 +110,7 @@ def _check_control_get_method(client, body, ctrl):
     resp = client.get(body['@controls'][ctrl]['href'])
     assert resp.status_code == 200
 
-def _check_control_post_method(client, body, ctrl):
+def _check_control_post_method(client, body, ctrl, data):
     """
     Check that the given control is correct
     """
@@ -109,9 +122,8 @@ def _check_control_post_method(client, body, ctrl):
     schema = ctrl_obj['schema']
     assert method == 'post'
     assert encoding == 'json'
-    body = _get_user_json()
-    validate(body, schema)
-    resp = client.post(href, json=body)
+    validate(data, schema)
+    resp = client.post(href, json=data)
     assert resp.status_code == 201
 
 def _check_control_delete_method(client, body, ctrl):
@@ -182,7 +194,7 @@ class TestUserCollection(object):
         _check_control_get_method(client, body, 'self')
         _check_control_get_method(client, body, 'revmusic:albums-all')
         _check_control_get_method(client, body, 'revmusic:reviews-all')
-        _check_control_post_method(client, body, 'revmusic:add-user')
+        _check_control_post_method(client, body, 'revmusic:add-user', _get_user_json())
 
         # Check that the 2 test users are found
         assert len(body['items']) == 2
@@ -191,8 +203,6 @@ class TestUserCollection(object):
             assert 'username' in item
             _check_control_get_method(client, item, 'profile')
             _check_control_get_method(client, item, 'self')
-            assert 'self' in item['@controls']
-            assert 'href' in item['@controls']['self']
 
         # Invalid URL
         resp = client.get(self.INVALID_URL)
@@ -404,6 +414,48 @@ class TestUserItem(object):
         assert resp.status_code == 404
 
 
+class TestUserCollection(object):
+    RESOURCE_URL = '/api/albums/'
+    INVALID_URL = '/api/albumss/'
+    DATE_REGEX = r'^([0-9]{4}[-][0-9]{2}-[0-9]{2})$'
+    DURATION_REGEX = r'^([0-9]{2}[:][0-9]{2}:[0-9]{2})$'
+    RESOURCE_NAME = 'AlbumCollection'
 
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'revmusic:users-all')
+        _check_control_get_method(client, body, 'revmusic:reviews-all')
+        _check_control_post_method(client, body, 'revmusic:add-album', _get_album_json())
 
+        # Check that the 3 test albums are found
+        assert len(body['items']) == 3
+        # Check that the required info is provided for items
+        for item in body['items']:
+            assert 'unique_name' in item
+            assert 'title' in item
+            assert 'artist' in item
+            assert 'release' in item
+            assert 'duration' in item
+            assert 'genre' in item
 
+            # Check that release and duration formats are correct, if they are not null
+            if item['release']:
+                assert re.search(self.DATE_REGEX, item['release'])
+            if item['duration']:
+                assert re.search(self.DURATION_REGEX, item['duration'])
+
+            _check_control_get_method(client, item, 'profile')
+            _check_control_get_method(client, item, 'self')
+
+        # Invalid URL
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
