@@ -414,7 +414,7 @@ class TestUserItem(object):
         assert resp.status_code == 404
 
 
-class TestUserCollection(object):
+class TestAlbumCollection(object):
     RESOURCE_URL = '/api/albums/'
     INVALID_URL = '/api/albumss/'
     DATE_REGEX = r'^([0-9]{4}[-][0-9]{2}-[0-9]{2})$'
