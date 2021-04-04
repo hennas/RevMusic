@@ -165,7 +165,7 @@ class Tag(db.Model):
     def get_schema():
         schema = {
             'type': 'object',
-            'required': ['review_id', 'meaning']
+            'required': ['review_url', 'meaning']
         }
         props = schema['properties'] = {}
         props['review_url'] = {
