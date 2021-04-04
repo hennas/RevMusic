@@ -151,6 +151,30 @@ class RevMusicBuilder(MasonBuilder):
             schema=Album.get_schema()
         )
 
+    def add_control_edit_album(self, album):
+        """
+        edit
+        """
+        self.add_control(
+            'edit',
+            href=url_for('api.albumitem', album=album),
+            title='Edit this album',
+            encoding='json',
+            method='PUT',
+            schema=Album.get_schema()
+        )
+        
+    def add_control_delete_album(self, album):
+        """
+        revmusic:delete
+        """
+        self.add_control(
+            'revmusic:delete',
+            href=url_for('api.albumitem', album=album),
+            title='Delete this album',
+            method='DELETE'
+        )
+        
     ###
     # REVIEWS
     ###
@@ -178,4 +202,50 @@ class RevMusicBuilder(MasonBuilder):
             href=url_for('api.reviewsbyuser', user=user),
             title='All reviews submitted by the user {}'.format(user)
         )
-
+        
+    def add_control_reviews_for(self, album, ctrl='revmusic:reviews-for'):
+        """
+        revmusic:reviews-for
+        """
+        self.add_control(
+            ctrl,
+            href=url_for('api.reviewsbyalbum', album=album),
+            title='All reviews submitted for the album {}'.format(album)
+        )
+        
+    def add_control_add_review(self, album):
+        """
+        revmusic:add-review
+        """
+        self.add_control(
+            'revmusic:add-review',
+            href=url_for('api.reviewsbyalbum', album=album),
+            title='Add a new review for this album',
+            encoding='json',
+            method='POST',
+            schema=Review.get_schema()
+        )
+        
+    def add_control_edit_review(self, album, review):
+        """
+        edit
+        """
+        self.add_control(
+            'edit',
+            href=url_for('api.reviewitem', album=album, review=review),
+            title='Edit this review',
+            encoding='json',
+            method='PUT',
+            schema=Review.get_schema()
+        )
+        
+    def add_control_delete_review(self, album, review):
+        """
+        revmusic:delete
+        """
+        self.add_control(
+            'revmusic:delete',
+            href=url_for('api.reviewitem', album=album, review=review),
+            title='Delete this review',
+            method='DELETE'
+        )
