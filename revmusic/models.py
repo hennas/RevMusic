@@ -90,7 +90,7 @@ class Album(db.Model):
         props['duration'] = {
             "description": "The length of the album in ISO 8601 time format",
             "type": "string",
-            "pattern": "^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]$"
+            "pattern": "^[0-9][0-9]:[0-5][0-9]:[0-5][0-9]$"
         }
         props['genre'] = {
             "description": "Album's genre",
@@ -168,8 +168,8 @@ class Tag(db.Model):
             'required': ['review_id', 'meaning']
         }
         props = schema['properties'] = {}
-        props['review_id'] = {
-            'description': 'The identifier for the review for which the tag is to be added',
+        props['review_url'] = {
+            'description': 'The URL for the review for which the tag is to be added',
             'type': 'string'
         }
         props['meaning'] = {
