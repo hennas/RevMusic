@@ -69,15 +69,15 @@ class AlbumCollection(Resource):
             duration = to_time(request.json['duration'])
             if duration is None:# None returned in case of an error
                 return create_error_response(400, 'Invalid duration',
-                'The release duration you provided is an invalid date')
+                'The release duration you provided is an invalid time')
         genre = None
         if 'genre' in request.json:
             genre = request.json['genre']
 
         # Check that unique_name is not in use
         if Album.query.filter_by(unique_name=unique_name).count() > 0:
-            return create_error_response(409, 'unique_name already exists',
-            'This unique name is already in use')
+            return create_error_response(409, 'Already exists',
+            'Unique name "{}" is already in use'.format(unique_name))
 
         # Create album entry and commit
         album = Album(
@@ -93,7 +93,7 @@ class AlbumCollection(Resource):
             db.session.commit()
         except IntegrityError:
             return create_error_response(409, 'Already exists',
-            'An album with the same title-artist combo already exists')
+            'Album with title "{}" already exists with artist "{}"'.format(title, artist))
 
         return Response(status=201, headers={
             'Location': url_for('api.albumitem', album=unique_name)
@@ -101,7 +101,35 @@ class AlbumCollection(Resource):
 
 class AlbumItem(Resource):
     def get(self, album):
-        return Response(status=200)
+        album_item = Album.query.filter_by(unique_name=album).first()
+        if not album_item:
+            return create_error_response(404, "Album not found")
+        
+        # Handle optional data (date and time objects to string)
+        release = album_item.publication_date
+        duration = album_item.duration
+        if release:
+            release = release.strftime('%Y-%m-%d')
+        if duration:
+            duration = duration.strftime('%H:%M:%S')
+            
+        body = RevMusicBuilder(
+            unique_name=album,
+            title=album_item.title,
+            artist=album_item.artist,
+            release=release,
+            duration=duration,
+            genre=album_item.genre
+        )
+        body.add_namespace('revmusic', LINK_RELATIONS_URL)
+        body.add_control('self', url_for('api.albumitem', album=album))
+        body.add_control('profile', ALBUM_PROFILE)
+        body.add_control('collection', url_for('api.albumcollection'), title='All albums')
+        body.add_control_reviews_for(album)
+        body.add_control_edit_album(album)
+        body.add_control_delete_album(album)
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, album):
         return Response(status=204)
