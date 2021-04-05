@@ -110,22 +110,71 @@ class ReviewCollection(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
 class ReviewsByAlbum(Resource):
-    def get(self):
-        pass
+    def get(self, album):
+        album_item = Album.query.filter_by(unique_name=album).first()
+        if not album_item:
+            return create_error_response(404, 'Album not found')
+        
+        body = RevMusicBuilder()
+        body.add_namespace('revmusic', LINK_RELATIONS_URL)
+        body.add_control('self', url_for('api.reviewsbyalbum', album=album))
+        body.add_control('up', url_for('api.albumitem', album=album), title='Album item for which the reviews have been submitted')
+        body.add_control_reviews_all()
+        body.add_control_add_review()
+        
+        reviews = Review.query.filter(Review.album == album_item).order_by(Review.submission_date.desc()).all()
+        body['items'] = []
+        for review in reviews:
+            item = RevMusicBuilder(
+                identifier=review.identifier,
+                user=review.user.username,
+                title=review.title,
+                star_rating=review.star_rating,
+                submission_date=datetime.datetime.strftime(review.submission_date, '%Y-%m-%d %H:%M:%S')
+            )
+            item.add_control('self', url_for('api.reviewitem', album=album, review=review.identifier))
+            item.add_control('profile', REVIEW_PROFILE)
+            body['items'].append(item)
+            
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
-    def post(self):
+    def post(self, album):
         pass
 
 class ReviewsByUser(Resource):
     def get(self, user):
-        return 'Received', 200
+        user_item = User.query.filter_by(username=user).first()
+        if not user_item:
+            return create_error_response(404, 'User not found')
+        
+        body = RevMusicBuilder()
+        body.add_namespace('revmusic', LINK_RELATIONS_URL)
+        body.add_control('self', url_for('api.reviewsbyuser', user=user))
+        body.add_control('up', url_for('api.useritem', user=user), title='User by whom the reviews have been submitted')
+        body.add_control_reviews_all()
+        
+        reviews = Review.query.filter(Review.user == user_item).order_by(Review.submission_date.desc()).all()
+        body['items'] = []
+        for review in reviews:
+            item = RevMusicBuilder(
+                identifier=review.identifier,
+                album=review.album.title,
+                title=review.title,
+                star_rating=review.star_rating,
+                submission_date=datetime.datetime.strftime(review.submission_date, '%Y-%m-%d %H:%M:%S')
+            )
+            item.add_control('self', url_for('api.reviewitem', album=review.album.unique_name, review=review.identifier))
+            item.add_control('profile', REVIEW_PROFILE)
+            body['items'].append(item)
+            
+        return Response(json.dumps(body), 200, mimetype=MASON)
     
 class ReviewItem(Resource):
-    def get(self):
+    def get(self, album, review):
         pass
 
-    def put(self):
+    def put(self, album, review):
         pass
 
-    def delete(self):
+    def delete(self, album, review):
         pass
