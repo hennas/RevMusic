@@ -48,16 +48,17 @@ def to_time(time_str):
         #print("Incorrect time format: {}".format(time_str))
         return None
 
-def is_valid_email(email):
-    """
-    Checks if a given email uses a correct format.
-    Return True if valid; False otherwise
-    """
-    # Source: https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
-    regex = r'^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
-    if not re.search(regex, email):
-        return False
-    return True
+# Email validity can be checked with JSON schema
+#def is_valid_email(email):
+#    """
+#    Checks if a given email uses a correct format.
+#    Return True if valid; False otherwise
+#    """
+#    # Source: https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+#    regex = r'^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
+#    if not re.search(regex, email):
+#        return False
+#    return True
 
 def is_valid_pwd(pwd):
     """
