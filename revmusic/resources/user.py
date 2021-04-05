@@ -74,6 +74,7 @@ class UserCollection(Resource):
             db.session.add(user)
             db.session.commit()
         except IntegrityError:
+            db.session.rollback()
             return create_error_response(409, 'User already exists',
             'This user already seems to exist. Could also be that something went horribly wrong during committing to the db :D')
         # Respond to successful request
@@ -152,6 +153,7 @@ class UserItem(Resource):
         try:
             db.session.commit()
         except IntegrityError:
+            db.session.rollback()
             return create_error_response(409, 'Something went wrong',
             'Something went wrong while attempting to commit to db. This is probably a catastrophic situation 0.0. Don\' abuse it please')
         return Response(status=204)
