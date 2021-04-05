@@ -172,11 +172,11 @@ class AlbumItem(Resource):
             'Unique name "{}" is already in use'.format(unique_name))
 
         # Update album values and commit
-        album_item.unique_name = unique_name,
-        album_item.title = title,
-        album_item.artist = artist,
-        album_item.publication_date = release,
-        album_item.duration = duration,
+        album_item.unique_name = unique_name
+        album_item.title = title
+        album_item.artist = artist
+        album_item.publication_date = release
+        album_item.duration = duration
         album_item.genre = genre
 
         try:
