@@ -14,14 +14,14 @@ class ReviewCollection(Resource):
         This enables the optional arguments for the GET request
         """
         self.parse = reqparse.RequestParser()
-        self.parse.add_argument('filterby', type=str, required=False, choices=('album', 'artist', 'genre', 'user')) # TODO: default='album'?
+        self.parse.add_argument('filterby', type=str, required=False, choices=('album', 'artist', 'genre', 'user')) # TODO: default='album'? Could be handled so that if searchword is given, but there is no filterby, then just use 'album'
         self.parse.add_argument('searchword', type=str, required=False)
         self.parse.add_argument('timeframe', type=str, required=False)
         self.parse.add_argument('nlatest', type=int, required=False)
 
     def get(self):
         """
-        Return reviews and handle filtering based on user given parameters
+        Return reviews and handle filtering based on parameters given by the client
         """
         body = RevMusicBuilder()
         body.add_namespace('revmusic', LINK_RELATIONS_URL)
@@ -47,16 +47,17 @@ class ReviewCollection(Resource):
                 if len(temp) > 2:   
                     raise Exception('More than two timeframe parameters')
             except Exception as e:
-                # Return an error if an exception occured
+                # Return an error if an exception occurred
                 # TODO: CHECK ERROR NUMBER
                 print(e)
-                return create_error_response(415, 'Incorrect timeframe format', 'You provided an icorrect timeframe format. Please fix that >:(')
+                return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:(')
 
         # Error handling for nlatest is implemented by flask, since the type has been set to int
-
+        
         # Handle filtering
+        # NOTE: checking could also be based on searchword, if it is given, then check filterby (if not given use 'album'), otherwise just filter based on time
         if not args['filterby']:
-            # No fitlerby
+            # No filterby
             if len(timeframe) < 1:
                 # No timeframe provided, return all or nlatest
                 reviews = Review.query.order_by(Review.submission_date.desc()).limit(nlatest).all()
@@ -72,7 +73,7 @@ class ReviewCollection(Resource):
         else:
             # Filterby provided, ensure that a searchword is also used
             if args['filterby'] and not args['searchword']:
-                return create_error_response(415, 'Searchword required', 'If you using filterby, provide a searchword !')
+                return create_error_response(415, 'Searchword required', 'If you using filterby, provide a searchword')
 
             # Handle filtering
             if args['filterby'] == 'album':
@@ -108,17 +109,6 @@ class ReviewCollection(Resource):
             body['items'].append(item)
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-
-class ReviewItem(Resource):
-    def get(self):
-        pass
-
-    def put(self):
-        pass
-
-    def delete(self):
-        pass
-
 class ReviewsByAlbum(Resource):
     def get(self):
         pass
@@ -129,3 +119,13 @@ class ReviewsByAlbum(Resource):
 class ReviewsByUser(Resource):
     def get(self, user):
         return 'Received', 200
+    
+class ReviewItem(Resource):
+    def get(self):
+        pass
+
+    def put(self):
+        pass
+
+    def delete(self):
+        pass
