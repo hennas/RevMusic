@@ -140,7 +140,9 @@ class Review(db.Model):
         }
         props['star_rating'] = {
             "description": "The number of stars the reviewer gives for the album. Between 1-5",
-            "type": "integer"
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
         }
         return schema
 
