@@ -260,4 +260,13 @@ class ReviewItem(Resource):
         pass
 
     def delete(self, album, review):
-        pass
+        album_item = Album.query.filter_by(unique_name=album).first()
+        if not album_item:
+            return create_error_response(404, 'Album not found')
+        review_item = Review.query.filter(Review.identifier == review).filter(Review.album == album_item).first()
+        if not review_item:
+            return create_error_response(404, 'Review not found')
+        
+        db.session.delete(review_item)
+        db.session.commit()
+        return Response(status=204)
