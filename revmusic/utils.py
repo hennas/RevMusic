@@ -71,13 +71,13 @@ def is_valid_pwd(pwd):
 def create_identifier(prefix):
     """
     Creates an identifier for an item: takes current datetime, stringifies it by concatenating year, month, day, hours, minutes and seconds,
-    and adds this combination to a given prefix. Returns the result.
+    and adds this combination to a given prefix. Returns the identifier and the creation datetime as a tuple.
     : param str prefix: Prefix of an identifier, e.g., "review_"
     """
     dt = datetime.datetime.now()
     dt_str = dt.strftime("%Y%m%d%H%M%S")
     identifier = prefix + dt_str
-    return identifier
+    return (identifier, dt)
     
 def to_user(username, email, password):
     return User(
