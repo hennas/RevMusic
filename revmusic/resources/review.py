@@ -1,6 +1,7 @@
 from revmusic.constants import *
 from revmusic.models import User, Album, Review, Tag
 from revmusic.mason import create_error_response, RevMusicBuilder
+from revmusic.utils import create_identifier
 from flask_restful import Resource, reqparse
 from flask import Response, request, url_for
 from sqlalchemy import func
@@ -139,7 +140,60 @@ class ReviewsByAlbum(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def post(self, album):
-        pass
+        if not request.json:
+            return create_error_response(415, 'Unsupported media type', 'Use JSON')
+        try:
+            validate(request.json, Review.get_schema())
+        except ValidationError as e:
+            return create_error_response(400, 'Invalid JSON document', str(e))
+        
+        # Does the album for which the review is being submitted exist
+        album_item = Album.query.filter_by(unique_name=album).first()
+        if not album_item:
+            return create_error_response(404, 'Album not found')
+        
+        # Note: the probability of creating an identifier that already exist is practically zero, 
+        # but just to be absolutely sure the creation is tried until unique identifier is created. 
+        # Infinite looping extremely unlikely.
+        while True:
+            identifier, submission_dt = create_identifier("review_")
+            if Review.query.filter_by(identifier=identifier).count() == 0:
+                break
+            
+        user = request.json['user'].lower() # Lowercase just in case
+        title = request.json['title']
+        content = request.json['content']
+        star_rating = request.json['star_rating']
+        
+        # Does the user by which the review is being submitted exist
+        user_item = User.query.filter_by(username=user).first()
+        if not user_item:
+            return create_error_response(404, 'User not found'))
+
+        # Create the new review entry
+        review = Review(
+            identifier=identifier,
+            user=user_item,
+            album=album_item,
+            title=title,
+            content=content,
+            star_rating=star_rating,
+            submission_date=submission_dt
+        )
+
+        # Attempt to add to database
+        try:
+            db.session.add(review)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return create_error_response(409, 'Already exists',
+            'User "{}" has already submitted a review to album with title "{}"'.format(user, album_item.title))
+        
+        # Respond to successful request
+        return Response(status=201, headers={
+            'Location': url_for('api.reviewitem', album=album, review=identifier)
+        })
 
 class ReviewsByUser(Resource):
     def get(self, user):
