@@ -257,6 +257,51 @@ class ReviewItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, album, review):
+        if not request.json:
+            return create_error_response(415, 'Unsupported media type', 'Use JSON')
+        try:
+            validate(request.json, Review.get_schema())
+        except ValidationError as e:
+            return create_error_response(400, 'Invalid JSON document', str(e))
+        
+        album_item = Album.query.filter_by(unique_name=album).first()
+        if not album_item:
+            return create_error_response(404, 'Album not found')
+        review_item = Review.query.filter(Review.identifier == review).filter(Review.album == album_item).first()
+        if not review_item:
+            return create_error_response(404, 'Review not found')
+        
+        # Note: the probability of creating an identifier that already exist is practically zero, 
+        # but just to be absolutely sure the creation is tried until unique identifier is created. 
+        # Infinite looping extremely unlikely.
+        while True:
+            identifier, submission_dt = create_identifier("review_")
+            if Review.query.filter_by(identifier=identifier).count() == 0:
+                break
+        original_user = review_item.user.username
+        user = request.json['user'].lower() # Lowercase just in case
+        title = request.json['title']
+        content = request.json['content']
+        star_rating = request.json['star_rating']
+        
+        if user != original_user:
+            return create_error_response(409, 'Username does not match', 
+            'Provided user "{}" has not submitted this review'.format(user))
+        
+        # Update review values and commit
+        review_item.identifier = identifier
+        review_item.title = title
+        review_item.content = content
+        review_item.star_rating = star_rating
+        review_item.submission_date = submission_dt
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return create_error_response(409, 'Unexpected error',
+            'An unexpected conflict happened while committing to the database')
+        
         return Response(status=204)
 
     def delete(self, album, review):
