@@ -225,7 +225,36 @@ class ReviewsByUser(Resource):
     
 class ReviewItem(Resource):
     def get(self, album, review):
-        pass
+        album_item = Album.query.filter_by(unique_name=album).first()
+        if not album_item:
+            return create_error_response(404, 'Album not found')
+        review_item = Review.query.filter(Review.identifier == review).filter(Review.album == album_item).first()
+        if not review_item:
+            return create_error_response(404, 'Review not found')
+        
+        user = review_item.user.username
+        body = RevMusicBuilder(
+            identifier=review,
+            user=user,
+            album=album_item.title,
+            artist=album_item.artist,
+            title=review_item.title,
+            content=review_item.content,
+            star_rating=review_item.star_rating,
+            submission_date=datetime.datetime.strftime(review_item.submission_date, '%Y-%m-%d %H:%M:%S')
+        )
+        body.add_namespace('revmusic', LINK_RELATIONS_URL)
+        body.add_control('self', url_for('api.reviewitem', album=album, review=review))
+        body.add_control('profile', REVIEW_PROFILE)
+        body.add_control('author', url_for('api.useritem', user=user), title='The user who has submitted the review')
+        body.add_control('about', url_for('api.albumitem', album=album), title='The album for which the review has been written')
+        body.add_control_reviews_by(user)
+        body.add_control_reviews_for(album)
+        body.add_control_reviews_all()
+        body.add_control_edit_review(album, review)
+        body.add_control_delete_review(album, review)
+        
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, album, review):
         pass
