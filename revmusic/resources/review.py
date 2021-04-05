@@ -257,7 +257,7 @@ class ReviewItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, album, review):
-        pass
+        return Response(status=204)
 
     def delete(self, album, review):
         album_item = Album.query.filter_by(unique_name=album).first()
