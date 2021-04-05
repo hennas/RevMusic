@@ -1,7 +1,7 @@
 from revmusic import db
 from revmusic.constants import *
 from revmusic.models import User, Album, Review, Tag
-from revmusic.utils import is_valid_email, is_valid_pwd
+from revmusic.utils import is_valid_pwd
 from revmusic.mason import create_error_response, RevMusicBuilder
 from flask_restful import Resource
 from flask import Response, request, url_for
@@ -46,10 +46,6 @@ class UserCollection(Resource):
         email = request.json['email']
         password = request.json['password']
 
-        # Validate email
-        if not is_valid_email(email):
-            return create_error_response(400, 'Invalid email format',
-            'Use a proper email format')
         # Check that username not taken
         if User.query.filter_by(username=username).count() > 0:
             return create_error_response(409, 'Username already exists',
@@ -131,10 +127,7 @@ class UserItem(Resource):
             if User.query.filter_by(username=username).count() > 0:
                 return create_error_response(409, 'Username already exists',
                 'Username {} already exists'.format(username))
-        # Validate email
-        if not is_valid_email(email):
-            return create_error_response(400, 'Invalid email format',
-            'Use a proper email format')
+
         # Check that possible new email is not taken
         if email != db_user.email:
             if User.query.filter_by(email=email).count() > 0:
