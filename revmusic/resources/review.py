@@ -168,7 +168,7 @@ class ReviewsByAlbum(Resource):
         # Does the user by which the review is being submitted exist
         user_item = User.query.filter_by(username=user).first()
         if not user_item:
-            return create_error_response(404, 'User not found'))
+            return create_error_response(404, 'User not found')
 
         # Create the new review entry
         review = Review(
