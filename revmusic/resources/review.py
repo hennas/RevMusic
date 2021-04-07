@@ -121,7 +121,7 @@ class ReviewsByAlbum(Resource):
         body.add_control('self', url_for('api.reviewsbyalbum', album=album))
         body.add_control('up', url_for('api.albumitem', album=album), title='Album item for which the reviews have been submitted')
         body.add_control_reviews_all()
-        body.add_control_add_review()
+        body.add_control_add_review(album)
         
         reviews = Review.query.filter(Review.album == album_item).order_by(Review.submission_date.desc()).all()
         body['items'] = []
