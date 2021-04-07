@@ -70,7 +70,7 @@ def _get_user_json(user='itsame', email='itm@gmail.com', pwd='9294ab38039f60d2ec
 
 def _get_album_json(unique_name='test', title='Test', artist='Tester', release='2001-04-25', duration='00:44:35', genre='Test Metal'):
     """
-    Returns json for a album.
+    Returns json for an album.
     """
     return {
         "unique_name": unique_name,
@@ -79,6 +79,17 @@ def _get_album_json(unique_name='test', title='Test', artist='Tester', release='
         "release": release,
         "duration": duration,
         "genre": genre
+    }
+
+def _get_review_json(user='revsaurus', title='My fav album', content='hehe', star_rating=5):
+    """
+    Returns json for a review
+    """
+    return {
+        "user": user,
+        "title": title,
+        "content": content,
+        "star_rating": star_rating
     }
 
 def _check_namespace(client, body):
@@ -459,3 +470,100 @@ class TestAlbumCollection(object):
         # Invalid URL
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
+
+    def test_valid_post(self, client):
+        print('\nTesting valid POST for {}: '.format(self.RESOURCE_NAME), end='')
+        album = _get_album_json()
+        # Check that a valid resonse succseed
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 201
+        # Check that the headers is correct
+        assert resp.headers['Location'].endswith(self.RESOURCE_URL + album['unique_name'] + '/')
+        # Check that the album was actually added
+        resp = client.get(resp.headers['Location'])
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert body['unique_name'] == album['unique_name']
+        assert body['title'] == album['title']
+        assert body['artist'] == album['artist']
+        assert body['release'] == album['release']
+        assert body['duration'] == album['duration']
+        assert body['genre'] == album['genre']
+    
+    def test_wrong_mediatype_post(self, client):
+        print('\nTesting wrong mediatype POST for {}: '.format(self.RESOURCE_NAME), end='')
+        album = _get_album_json()
+        resp = client.post(self.RESOURCE_URL, data=json.dumps(album))
+        assert resp.status_code == 415
+    
+    def test_missing_post(self, client):
+        print('\nTesting missing info POST for {}: '.format(self.RESOURCE_NAME), end='')
+        # Missing unique_name
+        album = _get_album_json()
+        del album['unique_name']
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+        # Missing title
+        album = _get_album_json()
+        del album['title']
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+        # Missing artist
+        album = _get_album_json()
+        del album['artist']
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+    
+    def test_incorrect_post(self, client):
+        print('\nTesting invalid values POST for {}: '.format(self.RESOURCE_NAME), end='')
+        # Invalid release date
+        album = _get_album_json(release='a')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+    
+        album = _get_album_json(release='2001-19')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(release='2021-01-01a')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(release='2021-13-13')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+    
+        # Invalid duration
+        album = _get_album_json(duration='a')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='00:aa')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='00:00')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='00:00-aa')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='999999:99999999:99999')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        # Invalid URL
+        album = _get_album_json()
+        resp = client.post(self.INVALID_URL, json=album)
+        assert resp.status_code == 404
+    
+    def test_already_exists_post(self, client):
+        print('\nTesting already exists POST for {}: '.format(self.RESOURCE_NAME), end='')
+        album = _get_album_json()
+        resp = client.post(self.RESOURCE_URL, json=album)
+        # Try to re-register same user
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 409
+
