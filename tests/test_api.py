@@ -148,9 +148,10 @@ def _check_control_delete_method(client, body, ctrl):
     resp = client.delete(href)
     assert resp.status_code == 204
 
-def _check_control_put_method(client, body, ctrl):
+def _check_control_put_method(client, body, ctrl, data):
     """
-    Check that the given control works correctly
+    Check that the given control works correctly.
+    Data parameter must be _get_xxxx_json(yyy='something')
     """
     _check_control_present(client, body, ctrl)
     ctrl_obj = body['@controls'][ctrl]
@@ -160,7 +161,7 @@ def _check_control_put_method(client, body, ctrl):
     schema = ctrl_obj['schema']
     assert method == 'put'
     assert encoding == 'json'
-    body = _get_user_json(user=body['username'])
+    body = data
     validate(body, schema)
     resp = client.put(href, json=body)
     assert resp.status_code == 204
@@ -222,7 +223,7 @@ class TestUserCollection(object):
     def test_valid_post(self, client):
         print('\nTesting valid POST for {}: '.format(self.RESOURCE_NAME), end='')
         user = _get_user_json()
-        # Check that a valid resonse succseed
+        # Check that a valid request succeeds
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 201
         # Check that the headers is correct
@@ -320,7 +321,7 @@ class TestUserItem(object):
         _check_control_get_method(client, body, 'profile')
         _check_control_get_method(client, body, 'collection')
         _check_control_get_method(client, body, 'revmusic:reviews-by')
-        _check_control_put_method(client, body, 'edit')
+        _check_control_put_method(client, body, 'edit', _get_user_json(user=body['username']))
         _check_control_delete_method(client, body, 'revmusic:delete')
         # Check that user info is included
         assert body['username'] == 'admin'
@@ -333,7 +334,7 @@ class TestUserItem(object):
         print('\nTesting valid PUT for {}: '.format(self.RESOURCE_NAME), end='')
         # Check that request works properly, i.e. return 200
         user = _get_user_json()
-        # Check that a valid resonse succseed
+        # Check that a valid request succeeds
         resp = client.put(self.RESOURCE_URL, json=user)
         assert resp.status_code == 204
         # Check that the info was actually updated
@@ -387,7 +388,6 @@ class TestUserItem(object):
         assert resp.status_code == 400
 
         # Invalid password
-        user = _get_user_json()
         user = _get_user_json(pwd='a'*65)
         resp = client.put(self.RESOURCE_URL, json=user)
         assert resp.status_code == 400
@@ -413,7 +413,7 @@ class TestUserItem(object):
         assert resp.status_code == 409
 
     def test_delete(self, client):
-        print('\nTesting delete PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        print('\nTesting DELETE for {}: '.format(self.RESOURCE_NAME), end='')
         # Valid deletion
         resp = client.delete(self.RESOURCE_URL)
         assert resp.status_code == 204
@@ -474,7 +474,7 @@ class TestAlbumCollection(object):
     def test_valid_post(self, client):
         print('\nTesting valid POST for {}: '.format(self.RESOURCE_NAME), end='')
         album = _get_album_json()
-        # Check that a valid resonse succseed
+        # Check that a valid request succeeds
         resp = client.post(self.RESOURCE_URL, json=album)
         assert resp.status_code == 201
         # Check that the headers is correct
@@ -567,3 +567,146 @@ class TestAlbumCollection(object):
         resp = client.post(self.RESOURCE_URL, json=album)
         assert resp.status_code == 409
 
+class TestAlbumItem(object):
+    RESOURCE_URL = '/api/albums/stc is the greatest/'
+    INVALID_URL = '/api/albums/swag_xd/'
+    RESOURCE_NAME = 'AlbumItem'
+    test_album = _get_album_json('stc is the greatest', 'STC is the Greatest', 'Spamtec', '2004-01-01', '01:01:00', 'Nerdcore')
+
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'profile')
+        _check_control_get_method(client, body, 'collection')
+        _check_control_get_method(client, body, 'revmusic:reviews-for')
+        _check_control_put_method(client, body, 'edit', _get_album_json(unique_name=body['unique_name']))
+        _check_control_delete_method(client, body, 'revmusic:delete')
+        # Check that album info is included
+        assert body['unique_name'] == self.test_album['unique_name']
+        assert body['title'] == self.test_album['title']
+        assert body['artist'] == self.test_album['artist']
+        assert body['release'] == self.test_album['release']
+        assert body['duration'] == self.test_album['duration']
+        assert body['genre'] == self.test_album['genre']
+        # Also test an invalid AlbumItem url
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+    def test_valid_put(self, client):
+        print('\nTesting valid PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        album = _get_album_json()
+        # Check that a valid request succeeds
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 204
+        # Check that the info was actually updated
+        resp = client.get('/api/albums/{}/'.format(album['unique_name']))
+        assert resp.status_code == 200
+        body = json.loads(resp.data) 
+        assert body['unique_name'] == album['unique_name']
+        assert body['title'] == album['title']
+        assert body['artist'] == album['artist']
+        assert body['release'] == album['release']
+        assert body['duration'] == album['duration']
+        assert body['genre'] == album['genre']
+    
+    def test_wrong_mediatype_put(self, client):
+        print('\nTesting wrong mediatype PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        album = _get_album_json()
+        resp = client.put(self.RESOURCE_URL, data=json.dumps(album))
+        assert resp.status_code == 415
+
+    def test_missing_put(self, client):
+        print('\nTesting missing info PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Missing unique_name
+        album = _get_album_json()
+        del album['unique_name']
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+        # Missing title
+        album = _get_album_json()
+        del album['title']
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+        # Missing artist
+        album = _get_album_json()
+        del album['artist']
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+    
+    def test_incorrect_put(self, client):
+        print('\nTesting invalid values PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Invalid release date
+        album = _get_album_json(release='a')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+    
+        album = _get_album_json(release='2001-19')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(release='2021-01-01a')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(release='2021-13-13')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+    
+        # Invalid duration
+        album = _get_album_json(duration='a')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='0put0:aa')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='00:00')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='00:00-aa')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        album = _get_album_json(duration='999999:99999999:99999')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
+        # Invalid URL
+        album = _get_album_json()
+        resp = client.put(self.INVALID_URL, json=album)
+        assert resp.status_code == 404
+    
+    def test_already_exists_put(self, client):
+        print('\nTesting already exists PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Try to edit to existing unique_name
+        album = _get_album_json(unique_name='iäti vihassa ja kunniassa')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 409
+        # Try to edit to existing title & artist combo
+        album = _get_album_json(title='Iäti Vihassa ja Kunniassa', artist='Vitsaus')
+        resp = client.put(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 409
+    
+    def test_delete(self, client):
+        print('\nTesting DELETE for {}: '.format(self.RESOURCE_NAME), end='')
+        # Valid deletion
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+        # Already deleted
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+        # Invalid URL
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404
+    
