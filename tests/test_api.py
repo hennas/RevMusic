@@ -710,3 +710,169 @@ class TestAlbumItem(object):
         resp = client.delete(self.INVALID_URL)
         assert resp.status_code == 404
     
+class TestReviewCollection(object):
+    RESOURCE_URL = '/api/reviews/'
+    INVALID_URL = '/api/reviewss/'
+    RESOURCE_NAME = 'ReviewCollection'
+
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'revmusic:albums-all')
+        _check_control_get_method(client, body, 'revmusic:users-all')
+
+        # Check that the 2 test reviews are found
+        assert len(body['items']) == 2
+        # Check that the required info is provided for items
+        for item in body['items']:
+            assert 'identifier' in item
+            assert 'user' in item
+            assert 'album' in item
+            assert 'title' in item
+            assert 'star_rating' in item
+            assert item['star_rating'] in [1, 2, 3, 4, 5]
+            assert 'submission_date' in item
+            _check_control_get_method(client, item, 'profile')
+            _check_control_get_method(client, item, 'self')
+
+        # Invalid URL
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+    
+    def test_filtering(self, client):
+        """
+        Checks that correct filtering options return the correct number of results
+        """
+        print('\nTesting GET filtering for {}: '.format(self.RESOURCE_NAME), end='')
+        # Find by album title
+        resp = client.get(self.RESOURCE_URL + '?filterby=album&searchword=stc')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        resp = client.get(self.RESOURCE_URL + '?filterby=album&searchword=s')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 2
+
+        resp = client.get(self.RESOURCE_URL + '?filterby=album&searchword=loooooooooolyolo')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 0
+
+        # Find by artist
+        resp = client.get(self.RESOURCE_URL + '?filterby=artist&searchword=spamtec')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        resp = client.get(self.RESOURCE_URL + '?filterby=artist&searchword=loooooooooolyolo')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 0
+
+        # Find by genre
+        resp = client.get(self.RESOURCE_URL + '?filterby=genre&searchword=black metal')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        resp = client.get(self.RESOURCE_URL + '?filterby=genre&searchword=hehelol')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 0
+
+        # Find by user
+        resp = client.get(self.RESOURCE_URL + '?filterby=user&searchword=admin')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        resp = client.get(self.RESOURCE_URL + '?filterby=user&searchword=hehelol')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 0
+
+        # Find by timeframe
+        resp = client.get(self.RESOURCE_URL + '?timeframe=25032021')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 2
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=27032021')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=26032021_27032021')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        # With nlatest
+        resp = client.get(self.RESOURCE_URL + '?filterby=album&searchword=s&nlatest=1')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=25032021_27032021&nlatest=1')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+        # With all together
+        resp = client.get(self.RESOURCE_URL + '?filterby=album&searchword=s&timeframe=25032021_27032021&nlatest=1')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 1
+
+    def test_incorrect_filtering(self, client):
+        """
+        Checks that correct filtering options return the correct number of results
+        """
+        print('\nTesting GET incorrect filtering for {}: '.format(self.RESOURCE_NAME), end='')
+        # No searchword
+        resp = client.get(self.RESOURCE_URL + '?filterby=album')
+        assert resp.status_code == 415
+
+        # Invalid filterby
+        resp = client.get(self.RESOURCE_URL + '?filterby=albumzzzz')
+        assert resp.status_code == 400
+
+        # Invalid timeframes
+        resp = client.get(self.RESOURCE_URL + '?timeframe=')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=a')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=1010202a')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=25032021_27a32021')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=25.32021')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=253202.1')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=25032021a27032021')
+        assert resp.status_code == 415
+
+        # Invalid nlatest
+        resp = client.get(self.RESOURCE_URL + '?nlatest=a')
+        assert resp.status_code == 400
+
+        resp = client.get(self.RESOURCE_URL + '?nlatest=1.1')
+        assert resp.status_code == 400
+
