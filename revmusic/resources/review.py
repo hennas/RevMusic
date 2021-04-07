@@ -40,18 +40,20 @@ class ReviewCollection(Resource):
         if args['timeframe'] is not None:
             try:
                 temp = args['timeframe'].split('_')
+                if not temp[0][4:].isnumeric() or not temp[0][2:4].isnumeric() or not temp[0][0:2].isnumeric():
+                    return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:(')
                 timeframe.append('{}-{}-{}'.format(temp[0][4:], temp[0][2:4], temp[0][0:2]))
                 # Check for possible second time
                 if len(temp) is 2:
+                    if not temp[1][4:].isnumeric() or not temp[1][2:4].isnumeric() or not temp[1][0:2].isnumeric():
+                        return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:(')
                     timeframe.append('{}-{}-{}'.format(temp[1][4:], temp[1][2:4], temp[1][0:2]))
                 # Make sure no more than 2 timeframes were provided
                 if len(temp) > 2:   
                     raise Exception('More than two timeframe parameters')
             except Exception as e:
                 # Return an error if an exception occurred
-                # TODO: CHECK ERROR NUMBER
-                print(e)
-                return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:(')
+                return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:( {}'.format(e))
 
         # Error handling for nlatest is implemented by flask, since the type has been set to int
         
