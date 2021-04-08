@@ -1035,5 +1035,108 @@ class TestReviewByUser(object):
         resp = client.get(self.INVALID_URL)
         assert resp.status_code == 404
 
+class TestReviewsByAlbum(object):
+    RESOURCE_URL = '/api/albums/stc is the greatest/reviews/'
+    INVALID_URL = '/api/albums/stc is the worst/reviews/'
+    RESOURCE_NAME = 'ReviewsByAlbum'
 
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'up')
+        _check_control_get_method(client, body, 'revmusic:reviews-all')
+        _check_control_post_method(client, body, 'revmusic:add-review', _get_review_json(user='admin'))
 
+        # Check that the test review is found
+        assert len(body['items']) == 1
+        # Check that the required info is provided for items
+        for item in body['items']:
+            assert 'identifier' in item
+            assert 'user' in item
+            assert 'title' in item
+            assert 'star_rating' in item
+            assert item['star_rating'] in [1, 2, 3, 4, 5]
+            assert 'submission_date' in item
+            _check_control_get_method(client, item, 'profile')
+            _check_control_get_method(client, item, 'self')
+
+        # Invalid URL
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+    
+    def test_valid_post(self, client):
+        print('\nTesting valid POST for {}: '.format(self.RESOURCE_NAME), end='')
+        review = _get_review_json(user='admin')
+        # Check that a valid request succeeds
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 201
+        # Check that the review was actually added
+        resp = client.get(resp.headers['Location'])
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert body['user'] == review['user']
+        assert body['title'] == review['title']
+        assert body['star_rating'] == review['star_rating']
+
+    
+    def test_wrong_mediatype_post(self, client):
+        print('\nTesting wrong mediatype POST for {}: '.format(self.RESOURCE_NAME), end='')
+        review = _get_review_json(user='admin')
+        resp = client.post(self.RESOURCE_URL, data=json.dumps(review))
+        assert resp.status_code == 415
+    
+    def test_missing_post(self, client):
+        print('\nTesting missing info POST for {}: '.format(self.RESOURCE_NAME), end='')
+        # Missing user
+        review = _get_review_json(user='admin')
+        del review['user']
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+        # Missing title
+        review = _get_review_json(user='admin')
+        del review['title']
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+        # Missing content
+        review = _get_review_json(user='admin')
+        del review['content']
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+        # Missing star_rating
+        review = _get_review_json(user='admin')
+        del review['star_rating']
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+    
+    def test_incorrect_post(self, client):
+        print('\nTesting invalid values POST for {}: '.format(self.RESOURCE_NAME), end='')
+        # User that doesn't exist
+        review = _get_review_json(user='badmin')
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 404
+
+        # Invalid star_rating
+        user = _get_review_json(user='admin', star_rating=-1)
+        resp = client.post(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        user = _get_review_json(user='admin', star_rating=6)
+        resp = client.post(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        user = _get_review_json(user='admin', star_rating=0)
+        resp = client.post(self.RESOURCE_URL, json=user)
+        assert resp.status_code == 400
+
+        # Invalid URL
+        user = _get_review_json(user='admin')
+        resp = client.post(self.INVALID_URL, json=user)
+        assert resp.status_code == 404
