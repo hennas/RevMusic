@@ -876,3 +876,130 @@ class TestReviewCollection(object):
         resp = client.get(self.RESOURCE_URL + '?nlatest=1.1')
         assert resp.status_code == 400
 
+class TestReviewItem(object):
+    RESOURCE_URL = '/api/albums/stc is the greatest/reviews/review_250320211334445/'
+    INVALID_URL = '/api/albums/stc is the greatest/review_xD'
+    RESOURCE_NAME = 'ReviewItem'
+
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'profile')
+        _check_control_get_method(client, body, 'author')
+        _check_control_get_method(client, body, 'about')
+        _check_control_get_method(client, body, 'revmusic:reviews-by')
+        _check_control_get_method(client, body, 'revmusic:reviews-for')
+        _check_control_get_method(client, body, 'revmusic:reviews-all')
+        _check_control_put_method(client, body, 'edit', _get_review_json(user='ytc fan'))
+        #_check_control_delete_method(client, body, 'revmusic:delete') # PUT updates the review's identifier, so this will not have the correct URL
+        # Check that review info is included
+        assert body['user'] == 'ytc fan'
+        assert body['title'] == 'STC STILL THE GREATES!'
+        assert body['content'] == 'I still listen to YTC and Phlow after all these years because this album is so good'
+        assert body['star_rating'] == 5
+
+        # Also test an invalid ReviewItem url
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+    
+    def test_valid_put(self, client):
+        print('\nTesting valid PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        review = _get_review_json(user='ytc fan', star_rating=3)
+        # Check that a valid request succeeds
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 204
+        # Check that the info was actually updated
+        """ 
+        # Can't test this, since the review identifier changes
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data) 
+        assert body['user'] == review['user']
+        assert body['title'] == review['title']
+        assert body['content'] == review['content']
+        assert body['star_rating'] == review['star_rating']
+        """
+    
+    def test_wrong_mediatype_put(self, client):
+        print('\nTesting wrong mediatype PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        review = _get_review_json()
+        resp = client.put(self.RESOURCE_URL, data=json.dumps(review))
+        assert resp.status_code == 415
+    
+    def test_missing_put(self, client):
+        print('\nTesting missing info PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Missing user
+        review = _get_review_json()
+        del review['user']
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+        # Missing title
+        review = _get_review_json()
+        del review['title']
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+        # Missing content
+        review = _get_review_json()
+        del review['content']
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+        # Missing star_rating
+        review = _get_review_json()
+        del review['star_rating']
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+    
+    def test_incorrect_put(self, client):
+        print('\nTesting invalid values PUT for {}: '.format(self.RESOURCE_NAME), end='')
+        # Different username
+        review = _get_review_json(user='a')
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 409
+
+        # Invalid star_rating
+        review = _get_review_json(star_rating=65)
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+
+        review = _get_review_json(star_rating=-1)
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+
+        review = _get_review_json(star_rating=0)
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+
+        review = _get_review_json(star_rating=6)
+        resp = client.put(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+
+        # Invalid URL
+        review = _get_review_json()
+        resp = client.put(self.INVALID_URL, json=review)
+        assert resp.status_code == 404
+
+    def test_delete(self, client):
+        print('\nTesting DELETE for {}: '.format(self.RESOURCE_NAME), end='')
+        # Valid deletion
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 204
+        # Already deleted
+        resp = client.delete(self.RESOURCE_URL)
+        assert resp.status_code == 404
+        # Invalid URL
+        resp = client.delete(self.INVALID_URL)
+        assert resp.status_code == 404
+    
+
+
+
+
