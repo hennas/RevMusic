@@ -999,7 +999,41 @@ class TestReviewItem(object):
         resp = client.delete(self.INVALID_URL)
         assert resp.status_code == 404
     
+class TestReviewByUser(object):
+    RESOURCE_URL = '/api/users/admin/reviews/'
+    INVALID_URL = '/api/users/badmin/reviews/'
+    RESOURCE_NAME = 'ReviewsByUser'
 
+    def test_get(self, client):
+        print('\nTesting GET for {}: '.format(self.RESOURCE_NAME), end='')
+        # Check that request works properly, i.e. return 200
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        # Check that everything that should be included, is included
+        body = json.loads(resp.data)
+        # Check namespace
+        _check_namespace(client, body)
+        # Check included controls
+        _check_control_get_method(client, body, 'self')
+        _check_control_get_method(client, body, 'up')
+        _check_control_get_method(client, body, 'revmusic:reviews-all')
+
+        # Check that the 2 test reviews are found
+        assert len(body['items']) == 1
+        # Check that the required info is provided for items
+        for item in body['items']:
+            assert 'identifier' in item
+            assert 'album' in item
+            assert 'title' in item
+            assert 'star_rating' in item
+            assert item['star_rating'] in [1, 2, 3, 4, 5]
+            assert 'submission_date' in item
+            _check_control_get_method(client, item, 'profile')
+            _check_control_get_method(client, item, 'self')
+
+        # Invalid URL
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
 
 
 
