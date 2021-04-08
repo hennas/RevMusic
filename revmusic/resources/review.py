@@ -1,3 +1,4 @@
+from revmusic import db
 from revmusic.constants import *
 from revmusic.models import User, Album, Review, Tag
 from revmusic.mason import create_error_response, RevMusicBuilder
@@ -5,8 +6,10 @@ from revmusic.utils import create_identifier
 from flask_restful import Resource, reqparse
 from flask import Response, request, url_for
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError, StatementError
 import datetime
 import json
+from jsonschema import validate, ValidationError
 
 
 class ReviewCollection(Resource):
