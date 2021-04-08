@@ -79,36 +79,3 @@ def create_identifier(prefix):
     dt_str = dt.strftime("%Y%m%d%H%M%S")
     identifier = prefix + dt_str
     return (identifier, dt)
-    
-def to_user(username, email, password):
-    return User(
-        username=username,
-        email=email,
-        password=password
-    )
-
-def to_album(unique_name, title, artist, publication_date, duration, genre):
-    return Album(
-        unique_name=unique_name,
-        title=title,
-        artist=artist,
-        publication_date=publication_date,
-        duration=duration,
-        genre=genre
-    )
-
-def to_review(identifier, title, content, star_rating, submission_date):
-    return Review(
-        identifier=identifier,
-        title=title,
-        content=content,
-        star_rating=star_rating,
-        submission_date=submission_date
-    )
-
-def to_tag(identifier, meaning, date_created):
-    return Tag(
-        identifier=identifier,
-        meaning=meaning,
-        date_created=date_created
-    )
