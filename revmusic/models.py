@@ -43,7 +43,9 @@ class User(db.Model):
         }
         props['password'] = {
             "description": "SHA256 hash of the user's password",
-            "type": "string"
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64
         }
         return schema
 
