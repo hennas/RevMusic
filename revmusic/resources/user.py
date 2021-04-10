@@ -1,7 +1,6 @@
 from revmusic import db
 from revmusic.constants import *
 from revmusic.models import User, Album, Review, Tag
-from revmusic.utils import is_valid_pwd
 from revmusic.mason import create_error_response, RevMusicBuilder
 from flask_restful import Resource
 from flask import Response, request, url_for
@@ -54,10 +53,6 @@ class UserCollection(Resource):
         if User.query.filter_by(email=email).count() > 0:
             return create_error_response(409, 'Email already exists',
             'Email {} already in use'.format(email))
-        # Check that password has correct length
-        if not is_valid_pwd(password):
-            return create_error_response(400, 'Invalid password',
-            'Password doesn\'t seem to have correct format')
 
         # Create the new user entry
         user = User(
@@ -133,10 +128,6 @@ class UserItem(Resource):
             if User.query.filter_by(email=email).count() > 0:
                 return create_error_response(409, 'Email already exists',
                 'Email {} already in use'.format(email))
-        # Validate password
-        if not is_valid_pwd(password):
-            return create_error_response(400, 'Invalid password',
-            'Password doesn\'t seem to have correct format')
         
         # Updated user entry
         db_user.username = username
