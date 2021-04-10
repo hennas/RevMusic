@@ -60,14 +60,15 @@ def to_time(time_str):
 #        return False
 #    return True
 
-def is_valid_pwd(pwd):
-    """
-    Checks if a given password uses a correct format.
-    Return True if valid; False otherwise
-    """
-    if len(pwd) is not 64:
-        return False
-    return True
+# Length check can be done with schema
+#def is_valid_pwd(pwd):
+#    """
+#    Checks if a given password uses a correct format.
+#    Return True if valid; False otherwise
+#    """
+#    if len(pwd) is not 64:
+#        return False
+#    return True
 
 def create_identifier(prefix):
     """
