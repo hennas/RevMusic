@@ -18,7 +18,7 @@ class ReviewCollection(Resource):
         This enables the optional query parameters for the GET request
         """
         self.parse = reqparse.RequestParser()
-        self.parse.add_argument('filterby', type=str, required=False, choices=('album', 'artist', 'genre', 'user'))
+        self.parse.add_argument('filterby', type=str, required=False, default='album', choices=('album', 'artist', 'genre', 'user'))
         self.parse.add_argument('searchword', type=str, required=False)
         self.parse.add_argument('timeframe', type=str, required=False)
         self.parse.add_argument('nlatest', type=int, required=False)
@@ -40,9 +40,9 @@ class ReviewCollection(Resource):
         foreign_keys = []
         timeframe = []
         nlatest = args['nlatest'] # None or int
-        
+         
         try:
-            validate(json.loads(args), REVIEW_ALL_SCHEMA )
+            validate(args, REVIEW_ALL_SCHEMA )
         except ValidationError as e:
             return create_error_response(400, 'Invalid query parameters provided', str(e))
         
