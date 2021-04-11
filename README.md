@@ -8,7 +8,7 @@ __Remember to include all required documentation and HOWTOs, including how to cr
 
 ## Installations
 
-**Note: This must be done before db tests can be run! Virtual environment recommended.**
+**Note: This must be done before tests can be run! Virtual environment recommended.**
 
 To run the application you should run the following commands (on Linux):
 ```bash
@@ -34,7 +34,7 @@ pytest-cov==2.8.
 
 ## Initializing the DataBase
 
-**Note: This is not needed for running the db tests, as we produce a temporary database for each test, as instructed in Exercise 1 extra. This initializes the database for the app, and adds some data to it. The db file already exists, and can be found [here](https://github.com/hennas/RevMusic/blob/master/db/revmusic.db). The database we use is SQLite 3.x**
+**Note: This initializes the database for the app, and adds some data to it. The db file already exists, and can be found [here](https://github.com/hennas/RevMusic/blob/master/db/revmusic.db). The database we use is SQLite 3.x**
 
 Before starting the application, you must initialize the database. This can be done by running the following command:
 ```bash
@@ -44,10 +44,9 @@ Then, you can populate the database with data by running:
 ```bash
 $ flask populate-db
 ```
-**Note:** A populated database can be found [here](https://github.com/hennas/RevMusic/blob/master/db/revmusic.db).
 
 ## Running the Application
-Once you have installed everything and initialized the DataBase, run this command:
+Once you have installed everything and initialized the database, run this command:
 ```bash
 $ flask run
 ```
@@ -61,4 +60,4 @@ $ python3 -m pytest -s tests
 # OR with coverage
 $ python3 -m pytest tests --cov=revmusic
 ```
-This run the tests for both, the database and the API. If you want to run them individually, change tests to **tests/test_db.py** or **tests/test_api.py**.
+This runs the tests for both, the database and the API. If you want to run them individually, change tests to **tests/test_db.py** or **tests/test_api.py**.
