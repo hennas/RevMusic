@@ -841,10 +841,6 @@ class TestReviewCollection(object):
         Checks that correct filtering options return the correct number of results
         """
         print('\nTesting GET incorrect filtering for {}: '.format(self.RESOURCE_NAME), end='')
-        # No searchword
-        resp = client.get(self.RESOURCE_URL + '?filterby=album')
-        assert resp.status_code == 415
-
         # Invalid filterby
         resp = client.get(self.RESOURCE_URL + '?filterby=albumzzzz')
         assert resp.status_code == 400
@@ -920,16 +916,13 @@ class TestReviewItem(object):
         resp = client.put(self.RESOURCE_URL, json=review)
         assert resp.status_code == 204
         # Check that the info was actually updated
-        """ 
-        # Can't test this, since the review identifier changes
-        resp = client.get(self.RESOURCE_URL)
+        resp = client.get(resp.headers['Location'])
         assert resp.status_code == 200
         body = json.loads(resp.data) 
         assert body['user'] == review['user']
         assert body['title'] == review['title']
         assert body['content'] == review['content']
         assert body['star_rating'] == review['star_rating']
-        """
     
     def test_wrong_mediatype_put(self, client):
         print('\nTesting wrong mediatype PUT for {}: '.format(self.RESOURCE_NAME), end='')
