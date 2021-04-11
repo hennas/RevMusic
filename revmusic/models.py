@@ -21,8 +21,8 @@ class User(db.Model):
     reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="user")
     tags = db.relationship("Tag", cascade="all, delete-orphan", back_populates="user")
     
-    def __repr__(self):
-        return "{} <{}>".format(self.username, self.id)
+    #def __repr__(self):
+    #    return "{} <{}>".format(self.username, self.id)
 
     @staticmethod
     def get_schema():
@@ -64,8 +64,8 @@ class Album(db.Model):
     
     reviews = db.relationship("Review", cascade="all, delete-orphan", back_populates="album")
 
-    def __repr__(self):
-        return "{} <{}> by {}".format(self.title, self.id, self.artist)
+    #def __repr__(self):
+    #    return "{} <{}> by {}".format(self.title, self.id, self.artist)
 
     @staticmethod
     def get_schema():
@@ -120,8 +120,8 @@ class Review(db.Model):
     album = db.relationship("Album", back_populates="reviews")
     tags = db.relationship("Tag", cascade="all, delete-orphan", back_populates="review")
 
-    def __repr__(self):
-        return "{} <{}>".format(self.title, self.id)
+    #def __repr__(self):
+    #    return "{} <{}>".format(self.title, self.id)
 
     @staticmethod
     def get_schema():
@@ -164,27 +164,27 @@ class Tag(db.Model):
     user = db.relationship("User", back_populates="tags")
     review = db.relationship("Review", back_populates="tags")
 
-    def __repr__(self):
-        return "{} tag <{}> by {}".format(self.meaning, self.id, self.user.username)
+    #def __repr__(self):
+    #    return "{} tag <{}> by {}".format(self.meaning, self.id, self.user.username)
 
-    @staticmethod
-    def get_schema():
-        schema = {
-            'type': 'object',
-            'required': ['review_url', 'meaning']
-        }
-        props = schema['properties'] = {}
-        props['review_url'] = {
-            'description': 'The URL for the review for which the tag is to be added',
-            'type': 'string'
-        }
-        props['meaning'] = {
-            "description": "The meaning of the tag, either 'useful' or 'not useful'",
-            "type": "string",
-            "enum": ["useful", "not useful"],
-            "default": "useful"
-        }
-        return schema
+    #@staticmethod
+    #def get_schema():
+    #   schema = {
+    #        'type': 'object',
+    #        'required': ['review_url', 'meaning']
+    #    }
+    #    props = schema['properties'] = {}
+    #    props['review_url'] = {
+    #        'description': 'The URL for the review for which the tag is to be added',
+    #        'type': 'string'
+    #    }
+    #    props['meaning'] = {
+    #        "description": "The meaning of the tag, either 'useful' or 'not useful'",
+    #        "type": "string",
+    #        "enum": ["useful", "not useful"],
+    #        "default": "useful"
+    #    }
+    #    return schema
 
 
 @click.command(name="init-db", help="Calls create_all() on the database")
