@@ -102,7 +102,8 @@ def _check_namespace(client, body):
     assert 'name' in body['@namespaces']['revmusic']
     ns_href = body['@namespaces']['revmusic']['name']
     resp = client.get(ns_href)
-    assert resp.status_code == 200
+    # We are expecting the namespace href to redirect
+    assert resp.status_code == 302 
 
 def _check_control_present(client, body, ctrl):
     """
@@ -119,7 +120,8 @@ def _check_control_get_method(client, body, ctrl):
     """
     _check_control_present(client, body, ctrl)
     resp = client.get(body['@controls'][ctrl]['href'])
-    assert resp.status_code == 200
+    # Is a redirect for profiles, thus 302 added
+    assert resp.status_code == 200 or resp.status_code == 302
 
 def _check_control_post_method(client, body, ctrl, data):
     """
