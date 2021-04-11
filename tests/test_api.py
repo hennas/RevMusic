@@ -56,8 +56,6 @@ def client():
 # Boilerplate functions
 #######################
 
-# TODO: ADD THE _get functions
-
 def _get_user_json(user='itsame', email='itm@gmail.com', pwd='9294ab38039f60d2ec53822fb46b52c663af7ea478f4d17bf43da44ede5e166c'):
     """
     Returns json for a user.
@@ -95,7 +93,7 @@ def _get_review_json(user='revsaurus', title='My fav album', content='hehe', sta
 def _check_namespace(client, body):
     """
     Checks that the 'revmusic' namespace is found in the given response
-    and that the 'name' is included and accessable
+    and that the 'name' is included and accessible
     """
     assert '@namespaces' in body
     assert 'revmusic' in body['@namespaces']
@@ -116,16 +114,16 @@ def _check_control_present(client, body, ctrl):
 def _check_control_get_method(client, body, ctrl):
     """
     Check that the given control is found in the message body and 
-    is accessable
+    is accessible
     """
     _check_control_present(client, body, ctrl)
     resp = client.get(body['@controls'][ctrl]['href'])
-    # Is a redirect for profiles, thus 302 added
+    # Response is a redirect only for the profile URLs, thus 302 added
     assert resp.status_code == 200 or resp.status_code == 302
 
 def _check_control_post_method(client, body, ctrl, data):
     """
-    Check that the given control is correct
+    Check that the given control works correctly in the case of POST method
     """
     _check_control_present(client, body, ctrl)
     ctrl_obj = body['@controls'][ctrl]
@@ -141,7 +139,7 @@ def _check_control_post_method(client, body, ctrl, data):
 
 def _check_control_delete_method(client, body, ctrl):
     """
-    Check that the given control works correctly
+    Check that the given control works correctly in the case of DELETE method
     """
     _check_control_present(client, body, ctrl)
     href = body['@controls'][ctrl]['href']
@@ -152,8 +150,7 @@ def _check_control_delete_method(client, body, ctrl):
 
 def _check_control_put_method(client, body, ctrl, data):
     """
-    Check that the given control works correctly.
-    Data parameter must be _get_xxxx_json(yyy='something')
+    Check that the given control works correctly in the case of PUT method.
     """
     _check_control_present(client, body, ctrl)
     ctrl_obj = body['@controls'][ctrl]
