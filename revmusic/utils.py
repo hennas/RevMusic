@@ -1,7 +1,5 @@
 import re
 import datetime
-from .models import User, Album, Review, Tag
-
 
 def to_date(date_str):
     """
