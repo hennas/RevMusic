@@ -1,5 +1,6 @@
 MASON = 'application/vnd.mason+json'
 LINK_RELATIONS_URL = '/revmusic/link-relations/'
+APIARY_URL = "https://revmusic.docs.apiary.io/#reference/"
 
 USER_PROFILE = '/profiles/user/'
 ALBUM_PROFILE = '/profiles/album/'
