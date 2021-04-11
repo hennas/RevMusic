@@ -24,20 +24,10 @@ class AlbumCollection(Resource):
 
         body['items'] = []
         for album in Album.query.all():
-            # Handle optional data (to string if exists)
-            release = album.publication_date
-            duration = album.duration
-            if release:
-                release = release.strftime('%Y-%m-%d')
-            if duration:
-                duration = duration.strftime('%H:%M:%S')
-
             item = RevMusicBuilder(
                 unique_name=album.unique_name,
                 title=album.title,
                 artist=album.artist,
-                release=release,
-                duration=duration,
                 genre=album.genre
             )
             item.add_control('self', url_for('api.albumitem', album=album.unique_name))
