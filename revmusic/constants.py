@@ -27,7 +27,8 @@ REVIEW_ALL_SCHEMA = {
         },
         "nlatest" : {
             "description": "Define the number how many latest reviews should be returned",
-            "type": "number"
+            "type": "integer",
+            "minimum": 1
         }
     },
     "required": []
