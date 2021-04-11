@@ -15,7 +15,7 @@ from jsonschema import validate, ValidationError
 class ReviewCollection(Resource):
     def __init__(self):
         """
-        This enables the optional arguments for the GET request
+        This enables the optional query parameters for the GET request
         """
         self.parse = reqparse.RequestParser()
         self.parse.add_argument('filterby', type=str, required=False, choices=('album', 'artist', 'genre', 'user')) # TODO: default='album'? Could be handled so that if searchword is given, but there is no filterby, then just use 'album'
@@ -25,7 +25,8 @@ class ReviewCollection(Resource):
 
     def get(self):
         """
-        Return reviews and handle filtering based on parameters given by the client
+        Responds to GET request with a listing of review items known to the API (JSON document with added hypermedia controls (MASON))
+        Query parameters in the request URL can be used to filter the returned reviews.
         """
         body = RevMusicBuilder()
         body.add_namespace('revmusic', LINK_RELATIONS_URL)
@@ -117,6 +118,12 @@ class ReviewCollection(Resource):
 
 class ReviewsByAlbum(Resource):
     def get(self, album):
+        """
+        Responds to GET request with a listing of all reviews for the specified album (JSON document with added hypermedia controls (MASON))
+        If the specified album does not exist in the API, 404 error code returned.
+        : param str album: the unique name of the album the reviews of which are requested, provided in the request URL
+        """
+        # Fetch the album item from the database and check whether it exists
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
@@ -128,6 +135,7 @@ class ReviewsByAlbum(Resource):
         body.add_control_reviews_all()
         body.add_control_add_review(album)
         
+        # Fetch all the reviews from the database for the specified album
         reviews = Review.query.filter(Review.album == album_item).order_by(Review.submission_date.desc()).all()
         body['items'] = []
         for review in reviews:
@@ -145,6 +153,12 @@ class ReviewsByAlbum(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def post(self, album):
+        """
+        Responds to POST request by adding a new review item to the specified album's review collection.
+        If no errors happens while adding the review, the location of the new item is returned in the 'Location' response header.
+        Otherwise an appropriate error code with a human-readable error message is returned.
+        : param str album: the unique name of the album to which a new review is added, provided in the request URL
+        """
         if not request.json:
             return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
@@ -157,6 +171,7 @@ class ReviewsByAlbum(Resource):
         if not album_item:
             return create_error_response(404, 'Album not found')
         
+        # Create an unique identifier and get the submission datetime for the review
         # Note: the probability of creating an identifier that already exist is practically zero, 
         # but just to be absolutely sure the creation is tried until unique identifier is created. 
         # Infinite looping extremely unlikely.
@@ -165,17 +180,18 @@ class ReviewsByAlbum(Resource):
             if Review.query.filter_by(identifier=identifier).count() == 0:
                 break
             
+        # Get the arguments from the request
         user = request.json['user'].lower() # Lowercase just in case
         title = request.json['title']
         content = request.json['content']
         star_rating = request.json['star_rating']
         
-        # Does the user by which the review is being submitted exist
+        # Does the user by which the review is being submitted exist (provided in the request body)
         user_item = User.query.filter_by(username=user).first()
         if not user_item:
             return create_error_response(404, 'User not found')
 
-        # Create the new review entry
+        # Create a new review entry
         review = Review(
             identifier=identifier,
             user=user_item,
@@ -197,11 +213,17 @@ class ReviewsByAlbum(Resource):
         
         # Respond to successful request
         return Response(status=201, headers={
-            'Location': url_for('api.reviewitem', album=album, review=identifier)
+            'Location': url_for('api.reviewitem', album=album, review=identifier) # The location of the added item
         })
 
 class ReviewsByUser(Resource):
     def get(self, user):
+        """
+        Responds to GET request with a listing of all reviews submitted by the specified user (JSON document with added hypermedia controls (MASON))
+        If the specified user does not exist in the API, 404 error code returned.
+        : param str user: the username of the user whose reviews are requested, provided in the request URL
+        """
+        # Fetch the user item from the database and check if it exists
         user_item = User.query.filter_by(username=user).first()
         if not user_item:
             return create_error_response(404, 'User not found')
@@ -212,6 +234,7 @@ class ReviewsByUser(Resource):
         body.add_control('up', url_for('api.useritem', user=user), title='User by whom the reviews have been submitted')
         body.add_control_reviews_all()
         
+        # Fetch the reviews from the database submitted by the specified user
         reviews = Review.query.filter(Review.user == user_item).order_by(Review.submission_date.desc()).all()
         body['items'] = []
         for review in reviews:
@@ -230,6 +253,13 @@ class ReviewsByUser(Resource):
     
 class ReviewItem(Resource):
     def get(self, album, review):
+        """
+        Responds to GET request with the representation of the requested review item (JSON document with added hypermedia controls (MASON))
+        If the requested review or the album for which the review should have been submitted does not exist in the API, 404 error code returned.
+        : param str album: the unique name of the album for which the requested review have been submitted, provided in the request URL
+        : param str review: the identifier of the requested review, provided in the request URL
+        """
+        # Fetch the album and review items from the database and check if they exist
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
@@ -237,6 +267,7 @@ class ReviewItem(Resource):
         if not review_item:
             return create_error_response(404, 'Review not found')
         
+        # Create response
         user = review_item.user.username
         body = RevMusicBuilder(
             identifier=review,
@@ -262,6 +293,12 @@ class ReviewItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, album, review):
+        """
+        Responds to PUT request by replacing the review item's representation with the provided new one. 
+        If an error happens while handling the request, an appropriate error code with a human-readable error message is returned.
+        : param str album: the unique name of the album for which the requested review have been submitted, provided in the request URL
+        : param str review: the identifier of the requested review, provided in the request URL
+        """
         if not request.json:
             return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
@@ -269,6 +306,7 @@ class ReviewItem(Resource):
         except ValidationError as e:
             return create_error_response(400, 'Invalid JSON document', str(e))
         
+        # Fetch the album and review items from the database and check if they exist
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
@@ -276,6 +314,7 @@ class ReviewItem(Resource):
         if not review_item:
             return create_error_response(404, 'Review not found')
         
+        # Create an updated unique identifier and get the updated submission datetime for the review
         # Note: the probability of creating an identifier that already exist is practically zero, 
         # but just to be absolutely sure the creation is tried until unique identifier is created. 
         # Infinite looping extremely unlikely.
@@ -284,11 +323,13 @@ class ReviewItem(Resource):
             if Review.query.filter_by(identifier=identifier).count() == 0:
                 break
         original_user = review_item.user.username
+        # Get the arguments from the request
         user = request.json['user'].lower() # Lowercase just in case
         title = request.json['title']
         content = request.json['content']
         star_rating = request.json['star_rating']
         
+        # Check whether provided user in the request matches the current writer of the review
         if user != original_user:
             return create_error_response(409, 'Username does not match', 
             'Provided user "{}" has not submitted this review'.format(user))
@@ -304,12 +345,19 @@ class ReviewItem(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return create_error_response(409, 'Unexpected error',
+            return create_error_response(409, 'Unexpected conflict',
             'An unexpected conflict happened while committing to the database')
         
         return Response(status=204)
 
     def delete(self, album, review):
+        """
+        Responds to DELETE request by deleting the requested review item.
+        If the requested review or the album for which the review should have been submitted does not exist in the API, 404 error code returned.
+        : param str album: the unique name of the album for which the requested review have been submitted, provided in the request URL
+        : param str review: the identifier of the requested review, provided in the request URL
+        """
+        # Fetch the album and review items from the database and check if they exist
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
