@@ -34,11 +34,18 @@ $ flask populate-db
 ```
 **Note:** A populated database can be found [here](https://github.com/hennas/RevMusic/blob/master/db/revmusic.db).
 
-## Testing the database
-
-The database tests can be run with the following command:
+## Running the Application
+Once you have installed everything and initialized the DataBase, run this command:
 ```bash
-$ python3 -m pytest tests 
+$ flask run
+```
+
+## Running the Tests
+
+The tests can be ran with the following commands:
+```bash
+$ python3 -m pytest -s tests 
 # OR with coverage
 $ python3 -m pytest tests --cov=revmusic
 ```
+This run the tests for both, the database and the API. If you want to run them individually, change tests to **tests/test_db.py** or **tests/test_api.py**.
