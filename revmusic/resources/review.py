@@ -40,11 +40,6 @@ class ReviewCollection(Resource):
         foreign_keys = []
         timeframe = []
         nlatest = args['nlatest'] # None or int
-         
-        try:
-            validate(args, REVIEW_ALL_SCHEMA )
-        except ValidationError as e:
-            return create_error_response(400, 'Invalid query parameters provided', str(e))
         
         if args['timeframe'] is not None:
             try:
@@ -67,9 +62,8 @@ class ReviewCollection(Resource):
         # Error handling for nlatest is implemented by flask, since the type has been set to int
         
         # Handle filtering
-        # NOTE: checking could also be based on searchword, if it is given, then check filterby (if not given use 'album'), otherwise just filter based on time
-        if not args['filterby']:
-            # No filterby
+        if not args['searchword']:
+            # No searchword
             if len(timeframe) < 1:
                 # No timeframe provided, return all or nlatest
                 reviews = Review.query.order_by(Review.submission_date.desc()).limit(nlatest).all()
@@ -83,10 +77,6 @@ class ReviewCollection(Resource):
                     .filter(func.date(Review.submission_date) <= timeframe[1]).order_by(Review.submission_date.desc()).limit(nlatest).all()
     
         else:
-            # Filterby provided, ensure that a searchword is also used
-            if args['filterby'] and not args['searchword']:
-                return create_error_response(415, 'Searchword required', 'If you using filterby, provide a searchword')
-
             # Handle filtering
             if args['filterby'] == 'album':
                 foreign_keys = Album.query.filter(Album.title.contains(args['searchword'])).all()
