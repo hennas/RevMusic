@@ -10,7 +10,7 @@ URL: https://github.com/enkwolf/pwp-course-sensorhub-api-example/blob/master/sen
 from revmusic.resources.user import UserCollection, UserItem
 from revmusic.resources.album import AlbumCollection, AlbumItem
 from revmusic.resources.review import ReviewCollection, ReviewItem, ReviewsByAlbum, ReviewsByUser
-from revmusic.resources.tag import TagsByUser, TagItem
+#from revmusic.resources.tag import TagsByUser, TagItem
 
 # Create the API blueprint
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
@@ -25,5 +25,5 @@ api.add_resource(ReviewsByAlbum, '/albums/<album>/reviews/')
 api.add_resource(ReviewItem, '/albums/<album>/reviews/<review>/')
 api.add_resource(ReviewCollection, '/reviews/')
 api.add_resource(ReviewsByUser, '/users/<user>/reviews/')
-api.add_resource(TagsByUser, '/users/<user>/tags/')
-api.add_resource(TagItem, '/users/<user>/tags/<tag>/')
+#api.add_resource(TagsByUser, '/users/<user>/tags/')
+#api.add_resource(TagItem, '/users/<user>/tags/<tag>/')
