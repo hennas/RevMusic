@@ -12,6 +12,9 @@ from jsonschema import validate, ValidationError
 
 class AlbumCollection(Resource):
     def get(self):
+        """
+        Responds to GET request with a listing of all album items known to the API (JSON document with added hypermedia controls (MASON))
+        """
         body = RevMusicBuilder()
         body.add_namespace('revmusic', LINK_RELATIONS_URL)
         body.add_control('self', url_for('api.albumcollection'))
@@ -44,6 +47,11 @@ class AlbumCollection(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def post(self):
+        """
+        Responds to POST request by adding a new album item to the collection. 
+        If no errors happens while adding the album, the location of the new item is returned in the 'Location' response header.
+        Otherwise an appropriate error code with a human-readable error message is returned.
+        """
         if not request.json:
             return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
@@ -100,6 +108,11 @@ class AlbumCollection(Resource):
 
 class AlbumItem(Resource):
     def get(self, album):
+        """
+        Responds to GET request with the information of the requested album item (JSON document with added hypermedia controls (MASON))
+        If requested album does not exist in the API, 404 error code returned.
+        : param str album: the unique name of the requested album, provided in the request URL
+        """
         # Fetch requested album item from database and check that it exists
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
@@ -132,6 +145,11 @@ class AlbumItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, album):
+        """
+        Responds to PUT request by replacing the album item's representation with the provided new one. 
+        If an error happens while handling the request, an appropriate error code with a human-readable error message is returned.
+        : param str album: the unique name of the requested album, provided in the request URL
+        """
         if not request.json:
             return create_error_response(415, 'Unsupported media type', 'Use JSON')
         
@@ -190,6 +208,11 @@ class AlbumItem(Resource):
         return Response(status=204)
 
     def delete(self, album):
+        """
+        Responds to DELETE request by deleting the requested album item.
+        If requested album does not exist in the API, 404 error code returned.
+        : param str album: the unique name of the requested album, provided in the request URL
+        """
         # Fetch requested album item from database and check that it exists
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
