@@ -150,7 +150,9 @@ class UserItem(Resource):
             return create_error_response(409, 'Unexpected conflict',
             'An unexpected conflict happened while committing to the database')
         
-        return Response(status=204)
+        return Response(status=204, headers={
+            'Location': url_for('api.useritem', user=username) # Location of the updated item
+        })
 
     def delete(self, user):
         """
