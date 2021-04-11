@@ -302,6 +302,9 @@ class TestUserCollection(object):
         # Try to re-register same user
         resp = client.post(self.RESOURCE_URL, json=user)
         assert resp.status_code == 409
+        # Try to re-register different user, same email
+        resp = client.post(self.RESOURCE_URL, json=_get_user_json(user='hennas'))
+        assert resp.status_code == 409
 
 
 class TestUserItem(object):
@@ -565,9 +568,14 @@ class TestAlbumCollection(object):
         print('\nTesting already exists POST for {}: '.format(self.RESOURCE_NAME), end='')
         album = _get_album_json()
         resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 201
         # Try to re-register same user
         resp = client.post(self.RESOURCE_URL, json=album)
         assert resp.status_code == 409
+        # Same with different unique name
+        resp = client.post(self.RESOURCE_URL, json=_get_album_json(unique_name='title_artist'))
+        assert resp.status_code == 409
+
 
 class TestAlbumItem(object):
     RESOURCE_URL = '/api/albums/stc is the greatest/'
@@ -836,6 +844,12 @@ class TestReviewCollection(object):
         body = json.loads(resp.data)
         assert len(body['items']) == 1
 
+        # With all together
+        resp = client.get(self.RESOURCE_URL + '?filterby=album&searchword=s&timeframe=25032021')
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body['items']) == 2
+
     def test_incorrect_filtering(self, client):
         """
         Checks that correct filtering options return the correct number of results
@@ -858,6 +872,9 @@ class TestReviewCollection(object):
         resp = client.get(self.RESOURCE_URL + '?timeframe=25032021_27a32021')
         assert resp.status_code == 415
 
+        resp = client.get(self.RESOURCE_URL + '?timeframe=25032021_27032021_28032021')
+        assert resp.status_code == 415
+
         resp = client.get(self.RESOURCE_URL + '?timeframe=25.32021')
         assert resp.status_code == 415
 
@@ -876,7 +893,9 @@ class TestReviewCollection(object):
 
 class TestReviewItem(object):
     RESOURCE_URL = '/api/albums/stc is the greatest/reviews/review_250320211334445/'
-    INVALID_URL = '/api/albums/stc is the greatest/review_xD'
+    INVALID_URL = '/api/albums/stc is the greatest/reviews/review_xD/'
+    INVALID_URL2 = '/api/albums/huutista/reviews/review_250320211334445/'
+    INVALID_URL3 = '/api/albums/stc is the greatest/reviews/review_27032021133658/'
     RESOURCE_NAME = 'ReviewItem'
 
     def test_get(self, client):
@@ -906,6 +925,12 @@ class TestReviewItem(object):
 
         # Also test an invalid ReviewItem url
         resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404
+
+        resp = client.get(self.INVALID_URL2)
+        assert resp.status_code == 404
+        
+        resp = client.get(self.INVALID_URL3)
         assert resp.status_code == 404
     
     def test_valid_put(self, client):
@@ -978,8 +1003,19 @@ class TestReviewItem(object):
         assert resp.status_code == 400
 
         # Invalid URL
+        # Review doesn't exist
         review = _get_review_json()
         resp = client.put(self.INVALID_URL, json=review)
+        assert resp.status_code == 404
+        
+        # Album doesn't exist
+        review = _get_review_json()
+        resp = client.put(self.INVALID_URL2, json=review)
+        assert resp.status_code == 404
+
+        # Album and review exists, but they are not related
+        review = _get_review_json()
+        resp = client.put(self.INVALID_URL3, json=review)
         assert resp.status_code == 404
 
     def test_delete(self, client):
@@ -994,6 +1030,12 @@ class TestReviewItem(object):
         resp = client.delete(self.INVALID_URL)
         assert resp.status_code == 404
     
+        resp = client.delete(self.INVALID_URL2)
+        assert resp.status_code == 404
+
+        resp = client.delete(self.INVALID_URL3)
+        assert resp.status_code == 404
+
 class TestReviewByUser(object):
     RESOURCE_URL = '/api/users/admin/reviews/'
     INVALID_URL = '/api/users/badmin/reviews/'
@@ -1080,7 +1122,6 @@ class TestReviewsByAlbum(object):
         assert body['user'] == review['user']
         assert body['title'] == review['title']
         assert body['star_rating'] == review['star_rating']
-
     
     def test_wrong_mediatype_post(self, client):
         print('\nTesting wrong mediatype POST for {}: '.format(self.RESOURCE_NAME), end='')
@@ -1118,20 +1159,25 @@ class TestReviewsByAlbum(object):
         resp = client.post(self.RESOURCE_URL, json=review)
         assert resp.status_code == 404
 
+        # User and album combo already exists
+        review = _get_review_json(user='ytc fan')
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 409
+
         # Invalid star_rating
-        user = _get_review_json(user='admin', star_rating=-1)
-        resp = client.post(self.RESOURCE_URL, json=user)
+        review = _get_review_json(user='admin', star_rating=-1)
+        resp = client.post(self.RESOURCE_URL, json=review)
         assert resp.status_code == 400
 
-        user = _get_review_json(user='admin', star_rating=6)
-        resp = client.post(self.RESOURCE_URL, json=user)
+        review = _get_review_json(user='admin', star_rating=6)
+        resp = client.post(self.RESOURCE_URL, json=review)
         assert resp.status_code == 400
 
-        user = _get_review_json(user='admin', star_rating=0)
-        resp = client.post(self.RESOURCE_URL, json=user)
+        review = _get_review_json(user='admin', star_rating=0)
+        resp = client.post(self.RESOURCE_URL, json=review)
         assert resp.status_code == 400
 
         # Invalid URL
-        user = _get_review_json(user='admin')
-        resp = client.post(self.INVALID_URL, json=user)
+        review = _get_review_json(user='admin')
+        resp = client.post(self.INVALID_URL, json=review)
         assert resp.status_code == 404
