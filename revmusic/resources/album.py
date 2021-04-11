@@ -63,9 +63,10 @@ class AlbumCollection(Resource):
         duration = None
         if 'duration' in request.json:
             duration = to_time(request.json['duration'])
-            if duration is None:# None returned in case of an error
-                return create_error_response(400, 'Invalid duration',
-                'The album duration you provided is an invalid time')
+            # Schema forces the duration to be in the right form, so following check for error is not necessary
+            #if duration is None:# None returned in case of an error
+            #    return create_error_response(400, 'Invalid duration',
+            #    'The album duration you provided is an invalid time')
         genre = None
         if 'genre' in request.json:
             genre = request.json['genre']
@@ -168,9 +169,10 @@ class AlbumItem(Resource):
         duration = None
         if 'duration' in request.json:
             duration = to_time(request.json['duration'])
-            if duration is None: # None returned in case of an error
-                return create_error_response(400, 'Invalid duration',
-                'The album duration you provided is an invalid time')
+            # Schema forces the duration to be in the right form, so following check for error is not necessary
+            #if duration is None: # None returned in case of an error
+            #    return create_error_response(400, 'Invalid duration',
+            #    'The album duration you provided is an invalid time')
         genre = None
         if 'genre' in request.json:
             genre = request.json['genre']
