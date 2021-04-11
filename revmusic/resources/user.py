@@ -5,7 +5,6 @@ from revmusic.mason import create_error_response, RevMusicBuilder
 from flask_restful import Resource
 from flask import Response, request, url_for
 from sqlalchemy.exc import IntegrityError, StatementError
-import re
 import json
 from jsonschema import validate, ValidationError
 
@@ -32,27 +31,25 @@ class UserCollection(Resource):
 
     def post(self):
         if not request.json:
-            return create_error_response(
-                415, 'Unsupported media type',
-                'Use JSON'
-            )
+            return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
             validate(request.json, User.get_schema())
         except ValidationError as e:
             return create_error_response(400, 'Invalid JSON document', str(e))
         
+        # Get arguments from the request
         username = request.json['username'].lower() # Lowercase the username
         email = request.json['email']
         password = request.json['password']
 
         # Check that username not taken
         if User.query.filter_by(username=username).count() > 0:
-            return create_error_response(409, 'Username already exists',
-            'Username {} already exists'.format(username))
+            return create_error_response(409, 'Already exists',
+            'User with username "{}" already exists'.format(username))
         # Check that email not taken
         if User.query.filter_by(email=email).count() > 0:
-            return create_error_response(409, 'Email already exists',
-            'Email {} already in use'.format(email))
+            return create_error_response(409, 'Already exists',
+            'User with email "{}" already exists'.format(email))
 
         # Create the new user entry
         user = User(
@@ -66,22 +63,21 @@ class UserCollection(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return create_error_response(409, 'User already exists',
-            'This user already seems to exist. Could also be that something went horribly wrong during committing to the db :D')
+            return create_error_response(409, 'Unexpected conflict',
+            'An unexpected conflict happened while committing to the database')
+        
         # Respond to successful request
         return Response(status=201, headers={
-            'Location': url_for('api.useritem', user=username)
+            'Location': url_for('api.useritem', user=username) # Location of the added item
         })
 
 class UserItem(Resource):
     def get(self, user):
+        # Fetch the requested user from the database and check that it exists
         db_user = User.query.filter_by(username=user).first()
-        # Check that the requested user exists
         if not db_user:
-            return create_error_response(
-                404, 'User not found',
-                'Yoooo, this user not here. Look somewhere else'
-            )
+            return create_error_response(404, 'User not found')
+        
         body = RevMusicBuilder(
             username=db_user.username,
             email=db_user.email
@@ -96,22 +92,17 @@ class UserItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, user):
-        db_user = User.query.filter_by(username=user).first()
-        # Check that the requested user exists
-        if not db_user:
-            return create_error_response(
-                404, 'User not found',
-                'Yoooo, this user not here. Look somewhere else'
-            )
         if not request.json:
-            return create_error_response(
-                415, 'Unsupported media type',
-                'Use JSON'
-            )
+            return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
             validate(request.json, User.get_schema())
         except ValidationError as e:
             return create_error_response(400, 'Invalid JSON document', str(e))
+        
+        # Fetch the requested user from the database and check that it exists
+        db_user = User.query.filter_by(username=user).first()
+        if not db_user:
+            return create_error_response(404, 'User not found')
         
         username = request.json['username'].lower() # Lowercase the username
         email = request.json['email']
@@ -120,14 +111,14 @@ class UserItem(Resource):
         # Check that possible new username is not taken
         if username != user:
             if User.query.filter_by(username=username).count() > 0:
-                return create_error_response(409, 'Username already exists',
-                'Username {} already exists'.format(username))
+                return create_error_response(409, 'Already exists',
+                'User with username "{}" already exists'.format(username))
 
         # Check that possible new email is not taken
         if email != db_user.email:
             if User.query.filter_by(email=email).count() > 0:
-                return create_error_response(409, 'Email already exists',
-                'Email {} already in use'.format(email))
+                return create_error_response(409, 'Already exists',
+                'User with email "{}" already exists'.format(email))
         
         # Updated user entry
         db_user.username = username
@@ -138,18 +129,17 @@ class UserItem(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return create_error_response(409, 'Something went wrong',
-            'Something went wrong while attempting to commit to db. This is probably a catastrophic situation 0.0. Don\' abuse it please')
+            return create_error_response(409, 'Unexpected conflict',
+            'An unexpected conflict happened while committing to the database')
+        
         return Response(status=204)
 
     def delete(self, user):
+        # Fetch the requested user from the database and check that it exists
         db_user = User.query.filter_by(username=user).first()
-        # Check that the requested user exists
         if not db_user:
-            return create_error_response(
-                404, 'User not found',
-                'Yoooo, this user not here. Look somewhere else'
-            )
+            return create_error_response(404, 'User not found')
+        
         db.session.delete(db_user)
         db.session.commit()
         return Response(status=204)
