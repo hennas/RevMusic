@@ -38,7 +38,7 @@ class User(db.Model):
         props['email'] = {
             "description": "User's email address",
             "type": "string",
-            "pattern": "^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$"
+            "pattern": r"^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$"
             # Source for regex: https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
         }
         props['password'] = {
