@@ -11,6 +11,9 @@ from jsonschema import validate, ValidationError
 
 class UserCollection(Resource):
     def get(self):
+        """
+        Responds to GET request with a listing of all user items known to the API (JSON document with added hypermedia controls (MASON))
+        """
         body = RevMusicBuilder()
         body.add_namespace('revmusic', LINK_RELATIONS_URL)
         body.add_control_users_all('self')
@@ -30,6 +33,11 @@ class UserCollection(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def post(self):
+        """
+        Responds to POST request by adding a new user item to the collection. 
+        If no errors happens while adding the user, the location of the new item is returned in the 'Location' response header.
+        Otherwise an appropriate error code with a human-readable error message is returned.
+        """
         if not request.json:
             return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
@@ -73,6 +81,11 @@ class UserCollection(Resource):
 
 class UserItem(Resource):
     def get(self, user):
+        """
+        Responds to GET request with the representation of the requested user item (JSON document with added hypermedia controls (MASON))
+        If the requested user does not exist in the API, 404 error code returned.
+        : param str user: the username of the requested user, provided in the request URL
+        """
         # Fetch the requested user from the database and check that it exists
         db_user = User.query.filter_by(username=user).first()
         if not db_user:
@@ -92,6 +105,11 @@ class UserItem(Resource):
         return Response(json.dumps(body), 200, mimetype=MASON)
 
     def put(self, user):
+        """
+        Responds to PUT request by replacing the user item's representation with the provided new one. 
+        If an error happens while handling the request, an appropriate error code with a human-readable error message is returned.
+        : param str user: the username of the requested user, provided in the request URL
+        """
         if not request.json:
             return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
@@ -135,6 +153,11 @@ class UserItem(Resource):
         return Response(status=204)
 
     def delete(self, user):
+        """
+        Responds to DELETE request by deleting the requested user item.
+        If the requested user does not exist in the API, 404 error code returned.
+        : param str user: the username of the requested user, provided in the request URL
+        """
         # Fetch the requested user from the database and check that it exists
         db_user = User.query.filter_by(username=user).first()
         if not db_user:
