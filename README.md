@@ -20,6 +20,18 @@ $ export FLASK_APP=revmusic
 ```
 **pip3 install .** is required so that the **revmusic** package is recognized
 
+#### Dependencies
+```
+click==6.7
+Flask==1.1.2
+Flask-SQLAlchemy==2.4.1
+Flask-RESTful==0.3.6
+SQLAlchemy==1.3.16
+jsonschema
+pytest==5.4.2
+pytest-cov==2.8.
+```
+
 ## Initializing the DataBase
 
 **Note: This is not needed for running the db tests, as we produce a temporary database for each test, as instructed in Exercise 1 extra. This initializes the database for the app, and adds some data to it. The db file already exists, and can be found [here](https://github.com/hennas/RevMusic/blob/master/db/revmusic.db). The database we use is SQLite 3.x**
@@ -39,6 +51,7 @@ Once you have installed everything and initialized the DataBase, run this comman
 ```bash
 $ flask run
 ```
+The API can now be found [here](http://127.0.0.1:5000/api/)
 
 ## Running the Tests
 
