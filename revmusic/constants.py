@@ -13,22 +13,21 @@ REVIEW_ALL_SCHEMA = {
     "properties": {
         "filterby": {
             "description": "Selects the feature on which the filtering of the returned reviews should be based",
-            "type": ["string", "null"],
+            "type": "string",
             "default": "album",
             "enum": ["album", "artist", "genre", "user"]
         },
         "searchword" : {
             "description": "Define the search word used with the filterby feature",
-            "type": ["string", "null"],
+            "type": "string"
         },
         "timeframe" : {
             "description": "Define the timeframe in which returned reviews should have been submitted. Format is ddmmyyyy or ddmmyyyy_ddmmyyyy",
-            "type": ["string", "null"],
+            "type": "string"
         },
         "nlatest" : {
             "description": "Define the number how many latest reviews should be returned",
-            "type": ["integer", "null"],
-            "minimum": 1
+            "type": "integer"
         }
     },
     "required": []
