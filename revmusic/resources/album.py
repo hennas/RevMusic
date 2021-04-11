@@ -21,7 +21,7 @@ class AlbumCollection(Resource):
 
         body['items'] = []
         for album in Album.query.all():
-            # Handle optional data
+            # Handle optional data (to string if exists)
             release = album.publication_date
             duration = album.duration
             if release:
@@ -45,10 +45,7 @@ class AlbumCollection(Resource):
 
     def post(self):
         if not request.json:
-            return create_error_response(
-                415, 'Unsupported media type',
-                'Use JSON'
-            )
+            return create_error_response(415, 'Unsupported media type', 'Use JSON')
         try:
             validate(request.json, Album.get_schema())
         except ValidationError as e:
@@ -97,7 +94,7 @@ class AlbumCollection(Resource):
             'Album with title "{}" already exists with artist "{}"'.format(title, artist))
 
         return Response(status=201, headers={
-            'Location': url_for('api.albumitem', album=unique_name)
+            'Location': url_for('api.albumitem', album=unique_name) # Location of the added item
         })
 
 class AlbumItem(Resource):
