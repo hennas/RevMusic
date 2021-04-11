@@ -34,7 +34,7 @@ class ReviewCollection(Resource):
         body.add_control_users_all()
         body.add_control_albums_all()
 
-        # Obtain arguments sent by user
+        # Obtain query parameters sent by user
         args = self.parse.parse_args()
         reviews = []
         foreign_keys = []
@@ -176,7 +176,7 @@ class ReviewsByAlbum(Resource):
         # but just to be absolutely sure the creation is tried until unique identifier is created. 
         # Infinite looping extremely unlikely.
         while True:
-            identifier, submission_dt = create_identifier("review_")
+            identifier, submission_dt = create_identifier('review_')
             if Review.query.filter_by(identifier=identifier).count() == 0:
                 break
             
@@ -319,7 +319,7 @@ class ReviewItem(Resource):
         # but just to be absolutely sure the creation is tried until unique identifier is created. 
         # Infinite looping extremely unlikely.
         while True:
-            identifier, submission_dt = create_identifier("review_")
+            identifier, submission_dt = create_identifier('review_')
             if Review.query.filter_by(identifier=identifier).count() == 0:
                 break
         original_user = review_item.user.username
