@@ -184,13 +184,12 @@ class RevMusicBuilder(MasonBuilder):
         revmusic:reviews-all
         """
         self.add_control(
-            # TODO: ADD THE MISSING STUFF HERE
             ctrl,
             href=url_for('api.reviewcollection') + '?{filterby,searchword,timeframe,nlatest}',
             title='All reviews',
             method='GET',
             isHrefTemplate=True,
-            schema=REVIEW_ALL_SCHEMA,
+            schema=REVIEW_ALL_SCHEMA
         )
 
     def add_control_reviews_by(self, user, ctrl='revmusic:reviews-by'):
@@ -200,7 +199,7 @@ class RevMusicBuilder(MasonBuilder):
         self.add_control(
             ctrl,
             href=url_for('api.reviewsbyuser', user=user),
-            title='All reviews submitted by the user {}'.format(user)
+            title='All reviews submitted by the user'
         )
         
     def add_control_reviews_for(self, album, ctrl='revmusic:reviews-for'):
@@ -210,7 +209,7 @@ class RevMusicBuilder(MasonBuilder):
         self.add_control(
             ctrl,
             href=url_for('api.reviewsbyalbum', album=album),
-            title='All reviews submitted for the album {}'.format(album)
+            title='All reviews submitted for the album'
         )
         
     def add_control_add_review(self, album):
