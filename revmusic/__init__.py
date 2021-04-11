@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, Response, request
+from flask import Flask, Response, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -53,12 +53,12 @@ def create_app(test_config=None):
     # Set link relations URL
     @app.route(LINK_RELATIONS_URL)
     def send_link_relations():
-        return 'link relations'
+        return redirect(APIARY_URL + "link-relations")
         
     # Set profiles URL
     @app.route('/profiles/<profile>/')
     def send_profile(profile):
-        return 'You requested {} profile'.format(profile)
+        return redirect(APIARY_URL + "profiles")
 
 
     from revmusic.mason import RevMusicBuilder
