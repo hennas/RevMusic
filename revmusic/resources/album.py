@@ -51,6 +51,7 @@ class AlbumCollection(Resource):
         except ValidationError as e:
             return create_error_response(400, 'Invalid JSON document', str(e))
         
+        # Get arguments from request
         unique_name = request.json['unique_name'].lower()
         title = request.json['title']
         artist = request.json['artist']
@@ -99,11 +100,12 @@ class AlbumCollection(Resource):
 
 class AlbumItem(Resource):
     def get(self, album):
+        # Fetch requested album item from database and check that it exists
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
         
-        # Handle optional data (date and time objects to string)
+        # Handle optional data (date and time objects to string, if exists)
         release = album_item.publication_date
         duration = album_item.duration
         if release:
@@ -138,10 +140,12 @@ class AlbumItem(Resource):
         except ValidationError as e:
             return create_error_response(400, 'Invalid JSON document', str(e))
         
+        # Fetch requested album item from database and check that it exists
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
         
+        # Get arguments from the request
         unique_name = request.json['unique_name'].lower()
         title = request.json['title']
         artist = request.json['artist']
@@ -186,6 +190,7 @@ class AlbumItem(Resource):
         return Response(status=204)
 
     def delete(self, album):
+        # Fetch requested album item from database and check that it exists
         album_item = Album.query.filter_by(unique_name=album).first()
         if not album_item:
             return create_error_response(404, 'Album not found')
