@@ -74,15 +74,15 @@
 
 ### Minutes
 *Summary of what was discussed during the meeting*
--Going through our wiki and code
--Showing that our tests run correctly 
--Checking the coverage of the tests
--We can keep the tag out of the implementation
-  -Assistant will still think solutions to the problem and send an email
+- Going through our wiki and code
+- Showing that our tests run correctly 
+- Checking the coverage of the tests
+- We can keep the tag out of the implementation
+  - Assistant will still think solutions to the problem and send an email
 
 ### Action points
 *List here the actions points discussed with assistants*
--Change the 204 into 201 in PUT requests
+- Change the 204 into 201 in PUT requests
 
 ### Comments from staff
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
