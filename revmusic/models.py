@@ -76,15 +76,18 @@ class Album(db.Model):
         props = schema['properties'] = {}
         props['unique_name'] = {
             'description': 'Unique name for an album. Preferably title lowercased, if taken, title_artist',
-            'type': 'string'
+            'type': 'string',
+            "minLength": 1
         }
         props['title'] = {
             "description": "Album title",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
         }
         props['artist'] = {
             "description": "Album's artist",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
         }
         props['release'] = {
             'description': 'Album\'s release date',
@@ -136,11 +139,13 @@ class Review(db.Model):
         }
         props['title'] = {
             "description": "Review title",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
         }
         props['content'] = {
             "description": "Written content for the review",
-            "type": "string"
+            "type": "string",
+            "minLength": 1
         }
         props['star_rating'] = {
             "description": "The number of stars the reviewer gives for the album. Between 1-5",
