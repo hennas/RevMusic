@@ -1,5 +1,6 @@
 import os
 import json
+from flask_cors import CORS
 from flask import Flask, Response, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.engine import Engine
@@ -21,6 +22,8 @@ def create_app(test_config=None):
     """
     # Configure the Flask app
     app = Flask(__name__, instance_relative_config=True, static_folder="static")
+    # SOURCE: https://stackoverflow.com/questions/65587708/why-is-flask-cors-not-detecting-my-cross-origin-domain-in-production
+    CORS(app, resources={r"/api/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
     # Check what database to use
     if test_config is None:
         app.config.from_mapping(
