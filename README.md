@@ -30,6 +30,7 @@ SQLAlchemy==1.3.16
 jsonschema
 pytest==5.4.2
 pytest-cov==2.8.
+flask-cors
 ```
 
 ## Initializing the DataBase
@@ -51,6 +52,13 @@ Once you have installed everything and initialized the database, run this comman
 $ flask run
 ```
 The API can now be found [here](http://127.0.0.1:5000/api/)
+
+## Running the Client
+When you have the database and the Flask API running, the client can be started with:
+```bash
+python3 client.py
+```
+The client front end can now be found [here](http://127.0.0.1:5001)
 
 ## Running the Tests
 
