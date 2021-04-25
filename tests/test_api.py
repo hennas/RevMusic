@@ -458,7 +458,7 @@ class TestAlbumCollection(object):
             assert 'artist' in item
             #assert 'release' in item
             #assert 'duration' in item
-            assert 'genre' in item
+            #assert 'genre' in item
 
             # Check that release and duration formats are correct, if they are not null
             #if item['release']:
@@ -518,6 +518,19 @@ class TestAlbumCollection(object):
     
     def test_incorrect_post(self, client):
         print('\nTesting invalid values POST for {}: '.format(self.RESOURCE_NAME), end='')
+        # Empty unqiue name
+        album = _get_album_json(unique_name='')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+        # Empty title
+        album = _get_album_json(title='')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+        # Empty artist
+        album = _get_album_json(artist='')
+        resp = client.post(self.RESOURCE_URL, json=album)
+        assert resp.status_code == 400
+
         # Invalid release date
         album = _get_album_json(release='a')
         resp = client.post(self.RESOURCE_URL, json=album)
@@ -866,6 +879,12 @@ class TestReviewCollection(object):
         resp = client.get(self.RESOURCE_URL + '?timeframe=1010202a')
         assert resp.status_code == 415
 
+        resp = client.get(self.RESOURCE_URL + '?timeframe=01132001')
+        assert resp.status_code == 415
+
+        resp = client.get(self.RESOURCE_URL + '?timeframe=01012001_01132001')
+        assert resp.status_code == 415
+
         resp = client.get(self.RESOURCE_URL + '?timeframe=25032021_27a32021')
         assert resp.status_code == 415
 
@@ -1160,6 +1179,16 @@ class TestReviewsByAlbum(object):
         review = _get_review_json(user='ytc fan')
         resp = client.post(self.RESOURCE_URL, json=review)
         assert resp.status_code == 409
+
+        # Empty title
+        review = _get_review_json(user='admin', title='')
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
+
+        # Empty content
+        review = _get_review_json(user='admin', content='')
+        resp = client.post(self.RESOURCE_URL, json=review)
+        assert resp.status_code == 400
 
         # Invalid star_rating
         review = _get_review_json(user='admin', star_rating=-1)
