@@ -1,0 +1,100 @@
+/*
+.grid-container generated with https://grid.layoutit.com/
+*/
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "Title Album_Search Review_Search Listening_To"
+      "Add_Album Albums Reviews Listening_To"
+      ". Albums Reviews Listening_To";
+  }
+  .Title { grid-area: Title; }
+  .Add_Album { grid-area: Add_Album; }
+  .Album_Search { grid-area: Album_Search; }
+  .Review_Search { grid-area: Review_Search; }
+  .Albums {
+    display: grid;
+    grid-template-columns: 0.6fr 1fr 1fr;
+    grid-template-rows: 0.5fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "Album_Title Album_Title Album_Title"
+      "Album_Img Album_Info Album_Info"
+      "Album_Img Album_Info Album_Info"
+      "Album_Img Album_Info Album_Info"
+      "Album_Img Album_Info Album_Info"
+      "Album_Img Album_Info Album_Info";
+    grid-area: Albums;
+  }
+  .Album_Title { grid-area: Album_Title; }
+  .Album_Img { grid-area: Album_Img; }
+  .Album_Info { grid-area: Album_Info; }
+  .Reviews { grid-area: Reviews; }
+  .Listening_To {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr 1fr;
+    grid-template-rows: 0.2fr 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "Listening_Title Listening_Title Listening_Title"
+      "Listening_Info Listening_Info Listening_Info"
+      "Listening_Info Listening_Info Listening_Info"
+      "Listening_Info Listening_Info Listening_Info";
+    grid-area: Listening_To;
+  }
+  .Listening_Title { grid-area: Listening_Title; }
+  .Listening_Info { grid-area: Listening_Info; }
+
+/*
+SOURCE for popup: http://jsfiddle.net/gp54V/1/
+*/
+#popupOverlay { position:absolute;top:0px; left:0px;  width:100%; height:100%;background:black;opacity:0.5; z-index:11; }
+
+.Edit_Album_Popup { display:none; position:absolute;top:0px; left:0px;  width:100%; height:100%; z-index:10; } 
+#albumPopupContent { position:relative; text-align:center; width:250px; margin:0 auto; height:280px; background:white; margin-top:200px; border:1px solid; z-index:12;}
+
+.Add_Review_Popup { display:none; position:absolute;top:0px; left:0px;  width:100%; height:100%; z-index:10; } 
+#reviewPopupContent { position:relative; text-align:center; width:250px; margin:0 auto; height:230px; background:white; margin-top:200px; border:1px solid; z-index:12;}
+
+.Artist_Info_Popup { display:none; position:absolute;top:0px; left:0px;  width:100%; height:100%; z-index:10; }
+#artistPopupContent { position:relative; text-align:center; width:800px; margin:0 auto; height:500px; background:white; margin-top:200px; border:1px solid; z-index:12; }
+
+.logo {
+    width: 100%;
+    height: 100%;
+}
+
+.album_search_img {
+    height: 50px;
+    width: 50px;
+    padding-bottom: 6px;
+}
+
+.album_img {
+    height: 80px;
+    width: 80px;
+    padding-bottom: 5px;
+}
+
+h1 {
+    line-height: 2px;
+}
+
+h3 {
+    line-height: 10px;
+}
+
+h4 {
+    line-height: 0.5px;
+}
+
+.select_album_btn {
+    color: blue;
+}
+
+.select_album_btn:hover {
+    cursor: pointer;
+}
