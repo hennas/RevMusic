@@ -45,12 +45,20 @@ class ReviewCollection(Resource):
             try:
                 temp = args['timeframe'].split('_')
                 if not temp[0][4:].isnumeric() or not temp[0][2:4].isnumeric() or not temp[0][0:2].isnumeric():
-                    return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:(')
+                    return create_error_response(415, 'Incorrect timeframe format')
+                try:
+                    datetime.date(int(temp[0][4:]), int(temp[0][2:4]), int(temp[0][0:2]))
+                except ValueError:
+                    return create_error_response(415, 'Incorrect timeframe format')
                 timeframe.append('{}-{}-{}'.format(temp[0][4:], temp[0][2:4], temp[0][0:2]))
                 # Check for possible second time
                 if len(temp) is 2:
                     if not temp[1][4:].isnumeric() or not temp[1][2:4].isnumeric() or not temp[1][0:2].isnumeric():
-                        return create_error_response(415, 'Incorrect timeframe format', 'You provided an incorrect timeframe format. Please fix that >:(')
+                        return create_error_response(415, 'Incorrect timeframe format')
+                    try:
+                        datetime.date(int(temp[1][4:]), int(temp[1][2:4]), int(temp[1][0:2]))
+                    except ValueError:
+                        return create_error_response(415, 'Incorrect timeframe format')
                     timeframe.append('{}-{}-{}'.format(temp[1][4:], temp[1][2:4], temp[1][0:2]))
                 # Make sure no more than 2 timeframes were provided
                 if len(temp) > 2:   
