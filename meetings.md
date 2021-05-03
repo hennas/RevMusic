@@ -82,7 +82,7 @@
   - Assistant will still think solutions to the problem and send an email
 - Code documentation seemed good
 - Assistant explained why Jinja can't be used for the client
-- Assistant showed us Flask.login for possible API autherntication
+- Assistant showed us Flask.login for possible API authentication
 
 ### Action points
 *List here the actions points discussed with assistants*
