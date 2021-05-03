@@ -221,6 +221,16 @@ function renderEditAlbum(href, unique_name, title, artist, release, duration, ge
     This function renders an input field used to update an albums information
     */
     // Popup based on: http://jsfiddle.net/gp54V/1/
+    console.log(release);
+    if(release == "null") {
+        release = '';
+    }
+    if(duration == "null") {
+        duration = '';
+    }
+    if(genre == "null") {
+        genre = '';
+    }
     $(".Edit_Album_Popup").html(
         "<div id='popupOverlay'></div>" +
         "<div id='albumPopupContent'>" +
@@ -274,14 +284,18 @@ function editAlbum(href) {
     Reads the album input field and sends the data with PUT to RevMusic. On success, alert shown to user and album info on the page is updated
     args:
         href: Link to the AlbumItem
+    // SOURCE: https://stackoverflow.com/questions/11704267/in-javascript-how-to-conditionally-add-a-member-to-an-object/38483660
     */
+    let release = document.getElementById("release").value;
+    let duration = document.getElementById("duration").value;
+    let genre = document.getElementById("genre").value;
     var updated_album = {
         'unique_name': document.getElementById('unique_name').value,
         'title': document.getElementById('title').value,
         'artist': document.getElementById('artist').value,
-        'release': document.getElementById('release').value,
-        'duration': document.getElementById('duration').value,
-        'genre': document.getElementById('genre').value,
+        ...(release != "") && {'release': release},
+        ...(duration != "") && {'duration': duration},
+        ...(genre != "") && {'genre': genre},
     };
     $.ajax({
         url: API_URL + href,
