@@ -76,9 +76,13 @@
 *Summary of what was discussed during the meeting*
 - Going through our wiki and code
 - Showing that our tests run correctly 
+  - Tests were good and it was easy to see what they do 
 - Checking the coverage of the tests
 - We can keep the tag out of the implementation
   - Assistant will still think solutions to the problem and send an email
+- Code documentation seemed good
+- Assistant explained why Jinja can't be used for the client
+- Assistant showed us Flask.login for possible API authentication
 
 ### Action points
 *List here the actions points discussed with assistants*
