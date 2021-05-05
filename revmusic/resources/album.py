@@ -197,7 +197,7 @@ class AlbumItem(Resource):
             return create_error_response(409, 'Already exists',
             'Album with title "{}" already exists with artist "{}"'.format(title, artist))
 
-        return Response(status=204, headers={
+        return Response(status=201, headers={
             'Location': url_for('api.albumitem', album=unique_name) # Location of the updated item
         })
 

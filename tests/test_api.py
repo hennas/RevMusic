@@ -163,7 +163,7 @@ def _check_control_put_method(client, body, ctrl, data):
     body = data
     validate(body, schema)
     resp = client.put(href, json=body)
-    assert resp.status_code == 204
+    assert resp.status_code == 201
 
 #######
 # TESTS
@@ -338,7 +338,7 @@ class TestUserItem(object):
         user = _get_user_json()
         # Check that a valid request succeeds
         resp = client.put(self.RESOURCE_URL, json=user)
-        assert resp.status_code == 204
+        assert resp.status_code == 201
         # Check that the info was actually updated
         resp = client.get('/api/users/itsame/')
         assert resp.status_code == 200
@@ -626,7 +626,7 @@ class TestAlbumItem(object):
         album = _get_album_json()
         # Check that a valid request succeeds
         resp = client.put(self.RESOURCE_URL, json=album)
-        assert resp.status_code == 204
+        assert resp.status_code == 201
         # Check that the info was actually updated
         resp = client.get('/api/albums/{}/'.format(album['unique_name']))
         assert resp.status_code == 200
@@ -955,7 +955,7 @@ class TestReviewItem(object):
         review = _get_review_json(user='ytc fan', star_rating=3)
         # Check that a valid request succeeds
         resp = client.put(self.RESOURCE_URL, json=review)
-        assert resp.status_code == 204
+        assert resp.status_code == 201
         # Check that the info was actually updated
         resp = client.get(resp.headers['Location'])
         assert resp.status_code == 200
