@@ -92,18 +92,7 @@
 *ONLY USED BY COURSE STAFF: Additional comments from the course staff*
 
 ## Midterm meeting
-* **DATE:**
-* **ASSISTANTS:**
-
-### Minutes
-*Summary of what was discussed during the meeting*
-
-### Action points
-*List here the actions points discussed with assistants*
-
-
-### Comments from staff
-*ONLY USED BY COURSE STAFF: Additional comments from the course staff*
+Doesn't concern us.
 
 ## Final meeting
 * **DATE: 14.5.2021**
@@ -113,11 +102,11 @@
 *Summary of what was discussed during the meeting*
 - Focus was on our client since everything else was already shown to work
 - Assistant noted that the actual URL for the client should have been shown in the README
-- Assistant noted that we shouldn't have hardcoded the values of, e.g., the add album field
+- Assistant noted that we shouldn't have hardcoded the field names of, e.g., the 'add album' section (should have used the schema).
   - Otherwise everything in the client was good
-- We explained our clients logo
-- We provided our thoughts and feedback about this course
-- Assistant was glad that we had notices a mistake in the Wiki page for DL. 5
+- We explained our client's logo
+- We provided our thoughts and feedback on this course
+- Assistant was glad that we had noticed a mistake in the Wiki page for DL. 5
 
 ### Action points
 *List here the actions points discussed with assistants*
